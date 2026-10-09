@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.muxcraft.mapper.ProjectSkillMapper">
+
+    <insert id="insertBatch">
+        INSERT INTO project_skills (project_id, skill_id) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.projectId}, #{item.skillId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteByProjectId">
+        DELETE FROM project_skills WHERE project_id = #{projectId}
+    </delete>
+
+    <select id="selectSkillIdsByProjectId" resultType="long">
+        SELECT skill_id FROM project_skills WHERE project_id = #{projectId}
+    </select>
+
+</mapper>

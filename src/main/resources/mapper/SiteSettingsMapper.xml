@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.muxcraft.mapper.SiteSettingsMapper">
+
+    <resultMap id="siteSettingsMap" type="com.muxcraft.entity.SiteSettings">
+        <id column="id" property="id"/>
+        <result column="site_title" property="siteTitle"/>
+        <result column="site_description" property="siteDescription"/>
+        <result column="profile_name" property="profileName"/>
+        <result column="profile_title" property="profileTitle"/>
+        <result column="short_intro" property="shortIntro"/>
+        <result column="full_intro" property="fullIntro"/>
+        <result column="location" property="location"/>
+        <result column="photo_url" property="photoUrl"/>
+        <result column="github_url" property="githubUrl"/>
+        <result column="gitee_url" property="giteeUrl"/>
+        <result column="website_url" property="websiteUrl"/>
+        <result column="registration_enabled" property="registrationEnabled"/>
+        <result column="guestbook_enabled" property="guestbookEnabled"/>
+        <result column="comment_enabled" property="commentEnabled"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="siteSettingsMap">
+        SELECT * FROM site_settings WHERE id = #{id}
+    </select>
+
+    <update id="update" parameterType="com.muxcraft.entity.SiteSettings">
+        UPDATE site_settings
+        <set>
+            <if test="siteTitle != null">site_title = #{siteTitle},</if>
+            <if test="siteDescription != null">site_description = #{siteDescription},</if>
+            <if test="profileName != null">profile_name = #{profileName},</if>
+            <if test="profileTitle != null">profile_title = #{profileTitle},</if>
+            <if test="shortIntro != null">short_intro = #{shortIntro},</if>
+            <if test="fullIntro != null">full_intro = #{fullIntro},</if>
+            <if test="location != null">location = #{location},</if>
+            <if test="photoUrl != null">photo_url = #{photoUrl},</if>
+            <if test="githubUrl != null">github_url = #{githubUrl},</if>
+            <if test="giteeUrl != null">gitee_url = #{giteeUrl},</if>
+            <if test="websiteUrl != null">website_url = #{websiteUrl},</if>
+            <if test="registrationEnabled != null">registration_enabled = #{registrationEnabled},</if>
+            <if test="guestbookEnabled != null">guestbook_enabled = #{guestbookEnabled},</if>
+            <if test="commentEnabled != null">comment_enabled = #{commentEnabled},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insert" parameterType="com.muxcraft.entity.SiteSettings" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO site_settings (id, site_title, site_description, profile_name, profile_title,
+            short_intro, full_intro, location, photo_url, github_url, gitee_url, website_url,
+            registration_enabled, guestbook_enabled, comment_enabled)
+        VALUES (#{id}, #{siteTitle}, #{siteDescription}, #{profileName}, #{profileTitle},
+            #{shortIntro}, #{fullIntro}, #{location}, #{photoUrl}, #{githubUrl}, #{giteeUrl}, #{websiteUrl},
+            #{registrationEnabled}, #{guestbookEnabled}, #{commentEnabled})
+    </insert>
+
+</mapper>

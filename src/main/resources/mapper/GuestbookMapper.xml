@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.muxcraft.mapper.GuestbookMapper">
+
+    <resultMap id="guestbookMap" type="com.muxcraft.entity.Guestbook">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="content" property="content"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.muxcraft.entity.Guestbook" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO guestbook (user_id, content) VALUES (#{userId}, #{content})
+    </insert>
+
+    <select id="selectPage" resultMap="guestbookMap">
+        SELECT * FROM guestbook ORDER BY created_at DESC LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM guestbook
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM guestbook WHERE id = #{id}
+    </delete>
+
+    <select id="selectById" resultMap="guestbookMap">
+        SELECT * FROM guestbook WHERE id = #{id}
+    </select>
+
+    <select id="selectAllAdmin" resultMap="guestbookMap">
+        SELECT * FROM guestbook ORDER BY created_at DESC
+    </select>
+
+    <select id="selectAdminPage" resultMap="guestbookMap">
+        SELECT * FROM guestbook ORDER BY created_at DESC LIMIT #{offset}, #{size}
+    </select>
+
+</mapper>

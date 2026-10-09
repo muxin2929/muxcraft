@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.muxcraft.mapper.AchievementMapper">
+
+    <resultMap id="achievementMap" type="com.muxcraft.entity.Achievement">
+        <id column="id" property="id"/>
+        <result column="year" property="year"/>
+        <result column="title" property="title"/>
+        <result column="description" property="description"/>
+        <result column="sort_order" property="sortOrder"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.muxcraft.entity.Achievement" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO achievements (year, title, description, sort_order)
+        VALUES (#{year}, #{title}, #{description}, #{sortOrder})
+    </insert>
+
+    <select id="selectAll" resultMap="achievementMap">
+        SELECT * FROM achievements ORDER BY year DESC, sort_order ASC, id DESC
+    </select>
+
+    <update id="update" parameterType="com.muxcraft.entity.Achievement">
+        UPDATE achievements
+        <set>
+            <if test="year != null">year = #{year},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM achievements WHERE id = #{id}
+    </delete>
+
+    <select id="selectById" resultMap="achievementMap">
+        SELECT * FROM achievements WHERE id = #{id}
+    </select>
+
+</mapper>

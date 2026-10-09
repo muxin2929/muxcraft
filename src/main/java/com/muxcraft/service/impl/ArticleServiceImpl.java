@@ -1,0 +1,125 @@
+package com.muxcraft.service.impl;
+
+import com.muxcraft.common.BizException;
+import com.muxcraft.common.PageResult;
+import com.muxcraft.common.ResultCode;
+import com.muxcraft.dto.ArticleDTO;
+import com.muxcraft.entity.Article;
+import com.muxcraft.mapper.ArticleMapper;
+import com.muxcraft.service.ArticleService;
+import com.muxcraft.vo.ArticleDetailVO;
+import com.muxcraft.vo.ArticleVO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
+
+/**
+ * 文章服务实现
+ */
+@Service
+public class ArticleServiceImpl implements ArticleService {
+
+    private static final Set<String> VALID_STATUSES = Set.of("DRAFT", "PUBLISHED");
+
+    private final ArticleMapper articleMapper;
+
+    public ArticleServiceImpl(ArticleMapper articleMapper) {
+        this.articleMapper = articleMapper;
+    }
+
+    @Override
+    public PageResult<ArticleVO> page(int page, int size, String tag) {
+        int offset = (page - 1) * size;
+        List<Article> list = articleMapper.selectPagePublished(offset, size, tag);
+        long total = articleMapper.countPublished(tag);
+        List<ArticleVO> records = list.stream().map(this::toListVO).toList();
+        return new PageResult<>(records, page, size, total);
+    }
+
+    @Override
+    public ArticleDetailVO detail(String slug) {
+        Article article = articleMapper.selectBySlug(slug);
+        if (article == null || !"PUBLISHED".equals(article.getStatus())) {
+            throw new BizException(ResultCode.NOT_FOUND, "文章不存在");
+        }
+        ArticleDetailVO vo = new ArticleDetailVO();
+        BeanUtils.copyProperties(article, vo);
+        return vo;
+    }
+
+    @Override
+    public ArticleVO create(ArticleDTO dto) {
+        validateStatus(dto.getStatus());
+        Article article = new Article();
+        BeanUtils.copyProperties(dto, article);
+        if (article.getStatus() == null) {
+            article.setStatus("DRAFT");
+        } else {
+            article.setStatus(article.getStatus().toUpperCase());
+        }
+        articleMapper.insert(article);
+        return toListVO(article);
+    }
+
+    @Override
+    public ArticleVO update(Long id, ArticleDTO dto) {
+        Article existing = articleMapper.selectById(id);
+        if (existing == null) {
+            throw new BizException(ResultCode.NOT_FOUND, "文章不存在");
+        }
+        validateStatus(dto.getStatus());
+        Article article = new Article();
+        BeanUtils.copyProperties(dto, article);
+        article.setId(id);
+        if (article.getStatus() != null) {
+            article.setStatus(article.getStatus().toUpperCase());
+        }
+        articleMapper.update(article);
+        return toListVO(articleMapper.selectById(id));
+    }
+
+    @Override
+    public void delete(Long id) {
+        Article existing = articleMapper.selectById(id);
+        if (existing == null) {
+            throw new BizException(ResultCode.NOT_FOUND, "文章不存在");
+        }
+        articleMapper.deleteById(id);
+    }
+
+    @Override
+    public Article getById(Long id) {
+        Article article = articleMapper.selectById(id);
+        if (article == null) {
+            throw new BizException(ResultCode.NOT_FOUND, "文章不存在");
+        }
+        return article;
+    }
+
+    @Override
+    public PageResult<Article> adminPage(int page, int size) {
+        int offset = (page - 1) * size;
+        List<Article> list = articleMapper.selectAdminPage(offset, size);
+        long total = articleMapper.countAll();
+        return new PageResult<>(list, page, size, total);
+    }
+
+    private ArticleVO toListVO(Article article) {
+        ArticleVO vo = new ArticleVO();
+        vo.setId(article.getId());
+        vo.setTitle(article.getTitle());
+        vo.setSlug(article.getSlug());
+        vo.setSummary(article.getSummary());
+        vo.setCoverUrl(article.getCoverUrl());
+        vo.setPublishedAt(article.getPublishedAt());
+        return vo;
+    }
+
+    private void validateStatus(String status) {
+        if (status != null && !status.isEmpty() && !VALID_STATUSES.contains(status.toUpperCase())) {
+            throw new BizException(ResultCode.BAD_REQUEST, "文章状态只能是 draft 或 published");
+        }
+    }
+}

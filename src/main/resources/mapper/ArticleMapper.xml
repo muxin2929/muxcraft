@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.muxcraft.mapper.ArticleMapper">
+
+    <resultMap id="articleMap" type="com.muxcraft.entity.Article">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="slug" property="slug"/>
+        <result column="summary" property="summary"/>
+        <result column="content" property="content"/>
+        <result column="cover_url" property="coverUrl"/>
+        <result column="status" property="status"/>
+        <result column="published_at" property="publishedAt"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.muxcraft.entity.Article" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO articles (title, slug, summary, content, cover_url, status, published_at)
+        VALUES (#{title}, #{slug}, #{summary}, #{content}, #{coverUrl}, #{status}, #{publishedAt})
+    </insert>
+
+    <select id="selectById" resultMap="articleMap">
+        SELECT * FROM articles WHERE id = #{id}
+    </select>
+
+    <select id="selectBySlug" resultMap="articleMap">
+        SELECT * FROM articles WHERE slug = #{slug}
+    </select>
+
+    <select id="selectPagePublished" resultMap="articleMap">
+        SELECT * FROM articles WHERE status = 'PUBLISHED'
+        <if test="tag != null and tag != ''">
+            AND content LIKE CONCAT('%', #{tag}, '%')
+        </if>
+        ORDER BY published_at DESC LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countPublished" resultType="long">
+        SELECT COUNT(*) FROM articles WHERE status = 'PUBLISHED'
+        <if test="tag != null and tag != ''">
+            AND content LIKE CONCAT('%', #{tag}, '%')
+        </if>
+    </select>
+
+    <update id="update" parameterType="com.muxcraft.entity.Article">
+        UPDATE articles
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="slug != null">slug = #{slug},</if>
+            <if test="summary != null">summary = #{summary},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="coverUrl != null">cover_url = #{coverUrl},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="publishedAt != null">published_at = #{publishedAt},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM articles WHERE id = #{id}
+    </delete>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM articles
+    </select>
+
+    <select id="selectAllAdmin" resultMap="articleMap">
+        SELECT * FROM articles ORDER BY created_at DESC
+    </select>
+
+    <select id="selectAdminPage" resultMap="articleMap">
+        SELECT * FROM articles ORDER BY created_at DESC LIMIT #{offset}, #{size}
+    </select>
+
+</mapper>

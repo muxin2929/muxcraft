@@ -1,0 +1,117 @@
+package com.muxcraft.service.impl;
+
+import com.muxcraft.common.BizException;
+import com.muxcraft.common.PageResult;
+import com.muxcraft.common.ResultCode;
+import com.muxcraft.entity.Comment;
+import com.muxcraft.entity.SiteSettings;
+import com.muxcraft.entity.User;
+import com.muxcraft.mapper.CommentMapper;
+import com.muxcraft.mapper.ProjectMapper;
+import com.muxcraft.mapper.SiteSettingsMapper;
+import com.muxcraft.mapper.UserMapper;
+import com.muxcraft.service.CommentService;
+import com.muxcraft.vo.CommentAdminVO;
+import com.muxcraft.vo.CommentVO;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 评论服务实现
+ */
+@Service
+public class CommentServiceImpl implements CommentService {
+
+    private final CommentMapper commentMapper;
+    private final UserMapper userMapper;
+    private final ProjectMapper projectMapper;
+    private final SiteSettingsMapper siteSettingsMapper;
+
+    public CommentServiceImpl(CommentMapper commentMapper, UserMapper userMapper, ProjectMapper projectMapper,
+                              SiteSettingsMapper siteSettingsMapper) {
+        this.commentMapper = commentMapper;
+        this.userMapper = userMapper;
+        this.projectMapper = projectMapper;
+        this.siteSettingsMapper = siteSettingsMapper;
+    }
+
+    @Override
+    public PageResult<CommentVO> page(Long projectId, int page, int size) {
+        int offset = (page - 1) * size;
+        List<Comment> list = commentMapper.selectPageByProjectId(projectId, offset, size);
+        long total = commentMapper.countByProjectId(projectId);
+        List<CommentVO> records = new ArrayList<>();
+        for (Comment comment : list) {
+            records.add(toVO(comment));
+        }
+        return new PageResult<>(records, page, size, total);
+    }
+
+    @Override
+    public CommentVO create(Long projectId, Long userId, String content) {
+        SiteSettings settings = siteSettingsMapper.selectById(1);
+        if (settings != null && settings.getCommentEnabled() != null && settings.getCommentEnabled() == 0) {
+            throw new BizException(ResultCode.FORBIDDEN, "评论已关闭");
+        }
+        if (projectMapper.selectById(projectId) == null) {
+            throw new BizException(ResultCode.NOT_FOUND, "项目不存在");
+        }
+        Comment comment = new Comment();
+        comment.setProjectId(projectId);
+        comment.setUserId(userId);
+        comment.setContent(content);
+        commentMapper.insert(comment);
+        return toVO(comment);
+    }
+
+    @Override
+    public void delete(Long id) {
+        Comment existing = commentMapper.selectById(id);
+        if (existing == null) {
+            throw new BizException(ResultCode.NOT_FOUND, "评论不存在");
+        }
+        commentMapper.deleteById(id);
+    }
+
+    @Override
+    public PageResult<CommentAdminVO> adminPage(int page, int size) {
+        int offset = (page - 1) * size;
+        List<Comment> list = commentMapper.selectAdminPage(offset, size);
+        long total = commentMapper.countAll();
+        List<CommentAdminVO> records = new ArrayList<>();
+        for (Comment comment : list) {
+            records.add(toAdminVO(comment));
+        }
+        return new PageResult<>(records, page, size, total);
+    }
+
+    private CommentVO toVO(Comment comment) {
+        CommentVO vo = new CommentVO();
+        vo.setId(comment.getId());
+        vo.setContent(comment.getContent());
+        vo.setCreatedAt(comment.getCreatedAt());
+        User user = userMapper.selectById(comment.getUserId());
+        if (user != null) {
+            vo.setNickname(user.getNickname());
+            vo.setAvatarUrl(user.getAvatarUrl());
+        }
+        return vo;
+    }
+
+    private CommentAdminVO toAdminVO(Comment comment) {
+        CommentAdminVO vo = new CommentAdminVO();
+        vo.setId(comment.getId());
+        vo.setProjectId(comment.getProjectId());
+        vo.setUserId(comment.getUserId());
+        vo.setContent(comment.getContent());
+        vo.setCreatedAt(comment.getCreatedAt());
+        User user = userMapper.selectById(comment.getUserId());
+        if (user != null) {
+            vo.setNickname(user.getNickname());
+            vo.setAvatarUrl(user.getAvatarUrl());
+        }
+        return vo;
+    }
+}

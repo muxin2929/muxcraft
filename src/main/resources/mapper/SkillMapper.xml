@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.muxcraft.mapper.SkillMapper">
+
+    <resultMap id="skillMap" type="com.muxcraft.entity.Skill">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="category" property="category"/>
+        <result column="icon_url" property="iconUrl"/>
+        <result column="rating" property="rating"/>
+        <result column="description" property="description"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.muxcraft.entity.Skill" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO skills (name, category, icon_url, rating, description, sort_order, status)
+        VALUES (#{name}, #{category}, #{iconUrl}, #{rating}, #{description}, #{sortOrder}, #{status})
+    </insert>
+
+    <select id="selectById" resultMap="skillMap">
+        SELECT * FROM skills WHERE id = #{id}
+    </select>
+
+    <select id="selectAllEnabled" resultMap="skillMap">
+        SELECT * FROM skills WHERE status = 1 ORDER BY sort_order ASC, id DESC
+    </select>
+
+    <select id="selectAll" resultMap="skillMap">
+        SELECT * FROM skills ORDER BY sort_order ASC, id DESC
+    </select>
+
+    <update id="update" parameterType="com.muxcraft.entity.Skill">
+        UPDATE skills
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="category != null">category = #{category},</if>
+            <if test="iconUrl != null">icon_url = #{iconUrl},</if>
+            <if test="rating != null">rating = #{rating},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM skills WHERE id = #{id}
+    </delete>
+
+    <select id="countEnabled" resultType="long">
+        SELECT COUNT(*) FROM skills WHERE status = 1
+    </select>
+
+    <select id="selectByProjectId" resultMap="skillMap">
+        SELECT s.* FROM skills s
+        INNER JOIN project_skills ps ON s.id = ps.skill_id
+        WHERE ps.project_id = #{projectId} AND s.status = 1
+        ORDER BY s.sort_order ASC, s.id DESC
+    </select>
+
+</mapper>

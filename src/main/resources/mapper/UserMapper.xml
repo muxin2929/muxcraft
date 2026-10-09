@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.muxcraft.mapper.UserMapper">
+
+    <resultMap id="userMap" type="com.muxcraft.entity.User">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="nickname" property="nickname"/>
+        <result column="password" property="password"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="role" property="role"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.muxcraft.entity.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (user_id, nickname, password, avatar_url, role, status)
+        VALUES (#{userId}, #{nickname}, #{password}, #{avatarUrl}, #{role}, #{status})
+    </insert>
+
+    <select id="selectById" resultMap="userMap">
+        SELECT * FROM users WHERE id = #{id}
+    </select>
+
+    <select id="selectByUserId" resultMap="userMap">
+        SELECT * FROM users WHERE user_id = #{userId}
+    </select>
+
+    <update id="updateProfile">
+        UPDATE users
+        <set>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="avatarUrl != null">avatar_url = #{avatarUrl},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updatePassword">
+        UPDATE users SET password = #{password} WHERE id = #{id}
+    </update>
+
+    <select id="selectPage" resultMap="userMap">
+        SELECT * FROM users ORDER BY id ASC LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM users
+    </select>
+
+    <update id="updateStatus">
+        UPDATE users SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <update id="updateAllAdminsAvatar">
+        UPDATE users SET avatar_url = #{avatarUrl} WHERE role = 'ADMIN'
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM users WHERE id = #{id}
+    </delete>
+
+    <select id="countAdmin" resultType="long">
+        SELECT COUNT(*) FROM users WHERE role = 'ADMIN' AND status = 1
+    </select>
+
+</mapper>
