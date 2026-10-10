@@ -7,12 +7,14 @@ import com.muxcraft.mapper.ExperienceMapper;
 import com.muxcraft.mapper.ProjectMapper;
 import com.muxcraft.mapper.SiteSettingsMapper;
 import com.muxcraft.mapper.SkillMapper;
-import com.muxcraft.mapper.UserMapper;
+import com.muxcraft.service.FileService;
 import com.muxcraft.service.SiteService;
 import com.muxcraft.vo.ProfileVO;
 import com.muxcraft.vo.SiteStatsVO;
 import com.muxcraft.vo.SiteVO;
+import com.muxcraft.vo.UploadVO;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 站点服务实现
@@ -25,17 +27,18 @@ public class SiteServiceImpl implements SiteService {
     private final ExperienceMapper experienceMapper;
     private final SkillMapper skillMapper;
     private final ArticleMapper articleMapper;
-    private final UserMapper userMapper;
+    private final FileService fileService;
 
     public SiteServiceImpl(SiteSettingsMapper siteSettingsMapper, ProjectMapper projectMapper,
                            ExperienceMapper experienceMapper, SkillMapper skillMapper,
-                           ArticleMapper articleMapper, UserMapper userMapper) {
+                           ArticleMapper articleMapper,
+                           FileService fileService) {
         this.siteSettingsMapper = siteSettingsMapper;
         this.projectMapper = projectMapper;
         this.experienceMapper = experienceMapper;
         this.skillMapper = skillMapper;
         this.articleMapper = articleMapper;
-        this.userMapper = userMapper;
+        this.fileService = fileService;
     }
 
     @Override
@@ -79,7 +82,7 @@ public class SiteServiceImpl implements SiteService {
     }
 
     @Override
-    public ProfileVO updateAdminProfile(AdminProfileDTO dto) {
+    public ProfileVO updateAdminProfile(AdminProfileDTO dto, MultipartFile photo) {
         SiteSettings settings = siteSettingsMapper.selectById(1);
         boolean isNew = (settings == null);
         if (isNew) {
@@ -99,9 +102,13 @@ public class SiteServiceImpl implements SiteService {
         } else {
             siteSettingsMapper.update(settings);
         }
-        if (dto.getPhotoUrl() != null && !dto.getPhotoUrl().isEmpty()) {
-            userMapper.updateAllAdminsAvatar(dto.getPhotoUrl());
+
+        if (photo != null && !photo.isEmpty()) {
+            UploadVO vo = fileService.upload(photo, "avatars");
+            settings.setPhotoUrl(vo.getUrl());
+            siteSettingsMapper.update(settings);
         }
+
         return getProfile();
     }
 }

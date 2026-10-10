@@ -5,11 +5,14 @@ import com.muxcraft.common.ResultCode;
 import com.muxcraft.dto.SkillDTO;
 import com.muxcraft.entity.Skill;
 import com.muxcraft.mapper.SkillMapper;
+import com.muxcraft.service.FileService;
 import com.muxcraft.service.SkillService;
 import com.muxcraft.vo.SkillCategoryVO;
 import com.muxcraft.vo.SkillVO;
+import com.muxcraft.vo.UploadVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -26,9 +29,11 @@ public class SkillServiceImpl implements SkillService {
     private static final Set<String> VALID_CATEGORIES = Set.of("frontend", "backend", "tool");
 
     private final SkillMapper skillMapper;
+    private final FileService fileService;
 
-    public SkillServiceImpl(SkillMapper skillMapper) {
+    public SkillServiceImpl(SkillMapper skillMapper, FileService fileService) {
         this.skillMapper = skillMapper;
+        this.fileService = fileService;
     }
 
     @Override
@@ -52,7 +57,7 @@ public class SkillServiceImpl implements SkillService {
     }
 
     @Override
-    public Skill create(SkillDTO dto) {
+    public Skill create(SkillDTO dto, MultipartFile icon) {
         validateCategory(dto.getCategory());
         Skill skill = new Skill();
         BeanUtils.copyProperties(dto, skill);
@@ -66,11 +71,18 @@ public class SkillServiceImpl implements SkillService {
             skill.setSortOrder(0);
         }
         skillMapper.insert(skill);
+
+        if (icon != null && !icon.isEmpty()) {
+            UploadVO vo = fileService.upload(icon, "icons");
+            skill.setIconUrl(vo.getUrl());
+            skillMapper.update(skill);
+        }
+
         return skill;
     }
 
     @Override
-    public Skill update(Long id, SkillDTO dto) {
+    public Skill update(Long id, SkillDTO dto, MultipartFile icon) {
         Skill existing = skillMapper.selectById(id);
         if (existing == null) {
             throw new BizException(ResultCode.NOT_FOUND, "技术栈不存在");
@@ -79,6 +91,12 @@ public class SkillServiceImpl implements SkillService {
         Skill skill = new Skill();
         BeanUtils.copyProperties(dto, skill);
         skill.setId(id);
+
+        if (icon != null && !icon.isEmpty()) {
+            UploadVO vo = fileService.upload(icon, "icons");
+            skill.setIconUrl(vo.getUrl());
+        }
+
         skillMapper.update(skill);
         return skillMapper.selectById(id);
     }

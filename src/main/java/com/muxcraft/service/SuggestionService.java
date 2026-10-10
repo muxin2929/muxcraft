@@ -5,6 +5,8 @@ import com.muxcraft.dto.SuggestionCreateDTO;
 import com.muxcraft.entity.Suggestion;
 import com.muxcraft.vo.SuggestionAdminVO;
 
+import java.util.List;
+
 /**
  * 建议服务
  */
@@ -15,6 +17,8 @@ public interface SuggestionService {
     PageResult<SuggestionAdminVO> adminPage(int page, int size);
 
     void delete(Long id);
+
+    void deleteByIds(List<Long> ids);
 
     PageResult<Suggestion> adminPageEntity(int page, int size);
 }

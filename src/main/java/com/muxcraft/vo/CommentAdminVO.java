@@ -11,7 +11,9 @@ public class CommentAdminVO {
 
     private Long id;
     private Long projectId;
+    private String projectName;
     private Long userId;
+    private String account;
     private String nickname;
     private String avatarUrl;
     private String content;
@@ -35,12 +37,28 @@ public class CommentAdminVO {
         this.projectId = projectId;
     }
 
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
     public Long getUserId() {
         return userId;
     }
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
     }
 
     public String getNickname() {

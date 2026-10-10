@@ -11,6 +11,7 @@ public class SuggestionAdminVO {
 
     private Long id;
     private Long userId;
+    private String account;
     private String nickname;
     private String title;
     private String content;
@@ -33,6 +34,14 @@ public class SuggestionAdminVO {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
     }
 
     public String getNickname() {

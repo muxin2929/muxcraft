@@ -16,8 +16,8 @@ public class ArticleDTO {
     @Size(max = 255)
     private String title;
 
-    @NotBlank(message = "slug不能为空")
-    @Size(max = 128)
+    @NotBlank(message = "页面链接不能为空")
+    @Size(max = 512)
     private String slug;
 
     @Size(max = 500)

@@ -1,5 +1,6 @@
 package com.muxcraft.controller;
 
+import com.muxcraft.common.JsonUtils;
 import com.muxcraft.common.PageResult;
 import com.muxcraft.common.Result;
 import com.muxcraft.dto.AdminProfileDTO;
@@ -35,6 +36,7 @@ import com.muxcraft.vo.ArticleVO;
 import com.muxcraft.vo.ExperienceVO;
 import com.muxcraft.vo.ProjectVO;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,8 +45,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 管理员控制器
@@ -94,9 +101,12 @@ public class AdminController {
     @GetMapping("/users")
     public Result<PageResult<UserAdminVO>> users(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
         size = Math.min(size, 50);
-        return Result.success(adminService.userPage(page, size));
+        return Result.success(adminService.userPage(page, size, keyword, startTime, endTime));
     }
 
     @PutMapping("/users/{id}/status")
@@ -116,9 +126,11 @@ public class AdminController {
         return Result.success(siteService.getProfile());
     }
 
-    @PutMapping("/profile")
-    public Result<ProfileVO> updateProfile(@Valid @RequestBody AdminProfileDTO dto) {
-        return Result.success(siteService.updateAdminProfile(dto));
+    @PutMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Result<ProfileVO> updateProfile(@RequestParam("data") String dataJson,
+                                           @RequestPart(value = "photo", required = false) MultipartFile photo) {
+        AdminProfileDTO dto = JsonUtils.parse(dataJson, AdminProfileDTO.class);
+        return Result.success(siteService.updateAdminProfile(dto, photo));
     }
 
     @GetMapping("/settings")
@@ -126,9 +138,11 @@ public class AdminController {
         return Result.success(adminService.getSettings());
     }
 
-    @PutMapping("/settings")
-    public Result<SiteSettingsVO> updateSettings(@RequestBody SiteSettingsDTO dto) {
-        return Result.success(adminService.updateSettings(dto));
+    @PutMapping(value = "/settings", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Result<SiteSettingsVO> updateSettings(@RequestParam("data") String dataJson,
+                                                 @RequestPart(value = "photo", required = false) MultipartFile photo) {
+        SiteSettingsDTO dto = JsonUtils.parse(dataJson, SiteSettingsDTO.class);
+        return Result.success(adminService.updateSettings(dto, photo));
     }
 
     @GetMapping("/projects")
@@ -143,14 +157,21 @@ public class AdminController {
         return Result.success(projectService.getById(id));
     }
 
-    @PostMapping("/projects")
-    public Result<ProjectVO> createProject(@Valid @RequestBody ProjectDTO dto) {
-        return Result.success(projectService.create(dto));
+    @PostMapping(value = "/projects", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Result<ProjectVO> createProject(@RequestParam("data") String dataJson,
+                                           @RequestPart(value = "icon", required = false) MultipartFile icon,
+                                           @RequestPart(value = "cover", required = false) MultipartFile cover) {
+        ProjectDTO dto = JsonUtils.parse(dataJson, ProjectDTO.class);
+        return Result.success(projectService.create(dto, icon, cover));
     }
 
-    @PutMapping("/projects/{id}")
-    public Result<ProjectVO> updateProject(@PathVariable Long id, @Valid @RequestBody ProjectDTO dto) {
-        return Result.success(projectService.update(id, dto));
+    @PutMapping(value = "/projects/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Result<ProjectVO> updateProject(@PathVariable Long id,
+                                           @RequestParam("data") String dataJson,
+                                           @RequestPart(value = "icon", required = false) MultipartFile icon,
+                                           @RequestPart(value = "cover", required = false) MultipartFile cover) {
+        ProjectDTO dto = JsonUtils.parse(dataJson, ProjectDTO.class);
+        return Result.success(projectService.update(id, dto, icon, cover));
     }
 
     @DeleteMapping("/projects/{id}")
@@ -171,14 +192,19 @@ public class AdminController {
         return Result.success(experienceService.getById(id));
     }
 
-    @PostMapping("/experiences")
-    public Result<ExperienceVO> createExperience(@Valid @RequestBody ExperienceDTO dto) {
-        return Result.success(experienceService.create(dto));
+    @PostMapping(value = "/experiences", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Result<ExperienceVO> createExperience(@RequestParam("data") String dataJson,
+                                                 @RequestPart(value = "cover", required = false) MultipartFile cover) {
+        ExperienceDTO dto = JsonUtils.parse(dataJson, ExperienceDTO.class);
+        return Result.success(experienceService.create(dto, cover));
     }
 
-    @PutMapping("/experiences/{id}")
-    public Result<ExperienceVO> updateExperience(@PathVariable Long id, @Valid @RequestBody ExperienceDTO dto) {
-        return Result.success(experienceService.update(id, dto));
+    @PutMapping(value = "/experiences/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Result<ExperienceVO> updateExperience(@PathVariable Long id,
+                                                 @RequestParam("data") String dataJson,
+                                                 @RequestPart(value = "cover", required = false) MultipartFile cover) {
+        ExperienceDTO dto = JsonUtils.parse(dataJson, ExperienceDTO.class);
+        return Result.success(experienceService.update(id, dto, cover));
     }
 
     @DeleteMapping("/experiences/{id}")
@@ -197,14 +223,19 @@ public class AdminController {
         return Result.success(skillService.getById(id));
     }
 
-    @PostMapping("/skills")
-    public Result<Skill> createSkill(@Valid @RequestBody SkillDTO dto) {
-        return Result.success(skillService.create(dto));
+    @PostMapping(value = "/skills", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Result<Skill> createSkill(@RequestParam("data") String dataJson,
+                                     @RequestPart(value = "icon", required = false) MultipartFile icon) {
+        SkillDTO dto = JsonUtils.parse(dataJson, SkillDTO.class);
+        return Result.success(skillService.create(dto, icon));
     }
 
-    @PutMapping("/skills/{id}")
-    public Result<Skill> updateSkill(@PathVariable Long id, @Valid @RequestBody SkillDTO dto) {
-        return Result.success(skillService.update(id, dto));
+    @PutMapping(value = "/skills/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Result<Skill> updateSkill(@PathVariable Long id,
+                                     @RequestParam("data") String dataJson,
+                                     @RequestPart(value = "icon", required = false) MultipartFile icon) {
+        SkillDTO dto = JsonUtils.parse(dataJson, SkillDTO.class);
+        return Result.success(skillService.update(id, dto, icon));
     }
 
     @DeleteMapping("/skills/{id}")
@@ -225,14 +256,19 @@ public class AdminController {
         return Result.success(articleService.getById(id));
     }
 
-    @PostMapping("/articles")
-    public Result<ArticleVO> createArticle(@Valid @RequestBody ArticleDTO dto) {
-        return Result.success(articleService.create(dto));
+    @PostMapping(value = "/articles", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Result<ArticleVO> createArticle(@RequestParam("data") String dataJson,
+                                           @RequestPart(value = "cover", required = false) MultipartFile cover) {
+        ArticleDTO dto = JsonUtils.parse(dataJson, ArticleDTO.class);
+        return Result.success(articleService.create(dto, cover));
     }
 
-    @PutMapping("/articles/{id}")
-    public Result<ArticleVO> updateArticle(@PathVariable Long id, @Valid @RequestBody ArticleDTO dto) {
-        return Result.success(articleService.update(id, dto));
+    @PutMapping(value = "/articles/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Result<ArticleVO> updateArticle(@PathVariable Long id,
+                                           @RequestParam("data") String dataJson,
+                                           @RequestPart(value = "cover", required = false) MultipartFile cover) {
+        ArticleDTO dto = JsonUtils.parse(dataJson, ArticleDTO.class);
+        return Result.success(articleService.update(id, dto, cover));
     }
 
     @DeleteMapping("/articles/{id}")
@@ -248,6 +284,12 @@ public class AdminController {
         return Result.success(commentService.adminPage(page, size));
     }
 
+    @DeleteMapping("/comments/batch")
+    public Result<Void> deleteCommentsBatch(@RequestParam("ids") List<Long> ids) {
+        commentService.deleteByIds(ids);
+        return Result.success();
+    }
+
     @DeleteMapping("/comments/{id}")
     public Result<Void> deleteComment(@PathVariable Long id) {
         commentService.delete(id);
@@ -261,6 +303,12 @@ public class AdminController {
         return Result.success(guestbookService.adminPage(page, size));
     }
 
+    @DeleteMapping("/guestbook/batch")
+    public Result<Void> deleteGuestbookBatch(@RequestParam("ids") List<Long> ids) {
+        guestbookService.deleteByIds(ids);
+        return Result.success();
+    }
+
     @DeleteMapping("/guestbook/{id}")
     public Result<Void> deleteGuestbook(@PathVariable Long id) {
         guestbookService.delete(id);
@@ -272,6 +320,12 @@ public class AdminController {
                                                                              @RequestParam(defaultValue = "10") int size) {
         size = Math.min(size, 50);
         return Result.success(suggestionService.adminPage(page, size));
+    }
+
+    @DeleteMapping("/suggestions/batch")
+    public Result<Void> deleteSuggestionsBatch(@RequestParam("ids") List<Long> ids) {
+        suggestionService.deleteByIds(ids);
+        return Result.success();
     }
 
     @DeleteMapping("/suggestions/{id}")

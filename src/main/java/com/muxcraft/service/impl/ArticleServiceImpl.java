@@ -7,10 +7,13 @@ import com.muxcraft.dto.ArticleDTO;
 import com.muxcraft.entity.Article;
 import com.muxcraft.mapper.ArticleMapper;
 import com.muxcraft.service.ArticleService;
+import com.muxcraft.service.FileService;
 import com.muxcraft.vo.ArticleDetailVO;
 import com.muxcraft.vo.ArticleVO;
+import com.muxcraft.vo.UploadVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Set;
@@ -24,9 +27,11 @@ public class ArticleServiceImpl implements ArticleService {
     private static final Set<String> VALID_STATUSES = Set.of("DRAFT", "PUBLISHED");
 
     private final ArticleMapper articleMapper;
+    private final FileService fileService;
 
-    public ArticleServiceImpl(ArticleMapper articleMapper) {
+    public ArticleServiceImpl(ArticleMapper articleMapper, FileService fileService) {
         this.articleMapper = articleMapper;
+        this.fileService = fileService;
     }
 
     @Override
@@ -39,8 +44,8 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public ArticleDetailVO detail(String slug) {
-        Article article = articleMapper.selectBySlug(slug);
+    public ArticleDetailVO detail(Long id) {
+        Article article = articleMapper.selectById(id);
         if (article == null || !"PUBLISHED".equals(article.getStatus())) {
             throw new BizException(ResultCode.NOT_FOUND, "文章不存在");
         }
@@ -50,7 +55,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public ArticleVO create(ArticleDTO dto) {
+    public ArticleVO create(ArticleDTO dto, MultipartFile cover) {
         validateStatus(dto.getStatus());
         Article article = new Article();
         BeanUtils.copyProperties(dto, article);
@@ -60,11 +65,18 @@ public class ArticleServiceImpl implements ArticleService {
             article.setStatus(article.getStatus().toUpperCase());
         }
         articleMapper.insert(article);
+
+        if (cover != null && !cover.isEmpty()) {
+            UploadVO vo = fileService.upload(cover, "covers");
+            article.setCoverUrl(vo.getUrl());
+            articleMapper.update(article);
+        }
+
         return toListVO(article);
     }
 
     @Override
-    public ArticleVO update(Long id, ArticleDTO dto) {
+    public ArticleVO update(Long id, ArticleDTO dto, MultipartFile cover) {
         Article existing = articleMapper.selectById(id);
         if (existing == null) {
             throw new BizException(ResultCode.NOT_FOUND, "文章不存在");
@@ -73,6 +85,12 @@ public class ArticleServiceImpl implements ArticleService {
         Article article = new Article();
         BeanUtils.copyProperties(dto, article);
         article.setId(id);
+
+        if (cover != null && !cover.isEmpty()) {
+            UploadVO vo = fileService.upload(cover, "covers");
+            article.setCoverUrl(vo.getUrl());
+        }
+
         if (article.getStatus() != null) {
             article.setStatus(article.getStatus().toUpperCase());
         }

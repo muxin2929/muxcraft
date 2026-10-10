@@ -54,6 +54,7 @@ public class SuggestionServiceImpl implements SuggestionService {
             vo.setCreatedAt(s.getCreatedAt());
             User user = userMapper.selectById(s.getUserId());
             if (user != null) {
+                vo.setAccount(user.getUserId());
                 vo.setNickname(user.getNickname());
             }
             records.add(vo);
@@ -68,6 +69,14 @@ public class SuggestionServiceImpl implements SuggestionService {
             throw new BizException(ResultCode.NOT_FOUND, "建议不存在");
         }
         suggestionMapper.deleteById(id);
+    }
+
+    @Override
+    public void deleteByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+        suggestionMapper.deleteByIds(ids);
     }
 
     @Override

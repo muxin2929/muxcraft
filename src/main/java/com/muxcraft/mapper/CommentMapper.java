@@ -19,6 +19,10 @@ public interface CommentMapper {
 
     int deleteById(@Param("id") Long id);
 
+    int deleteByIds(@Param("ids") List<Long> ids);
+
+    int deleteByProjectId(@Param("projectId") Long projectId);
+
     Comment selectById(@Param("id") Long id);
 
     List<Comment> selectAllAdmin();

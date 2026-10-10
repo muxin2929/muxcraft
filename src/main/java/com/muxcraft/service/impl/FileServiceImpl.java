@@ -100,6 +100,7 @@ public class FileServiceImpl implements FileService {
     private UploadVO saveToOss(MultipartFile file, String objectKey) {
         OSS client = ossClientFactory.getClient();
         if (client == null) {
+            log.info("OSS 未配置，跳过 OSS 上传, objectKey={}", objectKey);
             return null;
         }
         try {
@@ -107,7 +108,7 @@ public class FileServiceImpl implements FileService {
             String url = buildOssUrl(objectKey);
             return new UploadVO(url, objectKey);
         } catch (Exception e) {
-            log.error("OSS 上传异常, objectKey={}", objectKey, e);
+            log.error("OSS 上传失败，将降级到本地存储, objectKey={}, error={}", objectKey, e.getMessage(), e);
             return null;
         }
     }
@@ -146,9 +147,18 @@ public class FileServiceImpl implements FileService {
             }
             String url = base + "/uploads/" + objectKey;
             return new UploadVO(url, objectKey);
+        } catch (java.nio.file.AccessDeniedException | SecurityException e) {
+            log.error("本地文件保存失败：目录无写入权限, objectKey={}, target={}", objectKey, target, e);
+            throw new BizException(ResultCode.INTERNAL_ERROR, "文件存储目录无写入权限，请联系管理员检查目录权限");
+        } catch (IllegalStateException e) {
+            log.error("本地文件保存失败：文件状态异常, objectKey={}, target={}", objectKey, target, e);
+            throw new BizException(ResultCode.INTERNAL_ERROR, "文件处理异常，请重新上传");
         } catch (IOException e) {
             log.error("本地文件保存失败, objectKey={}, target={}", objectKey, target, e);
-            throw new BizException(ResultCode.INTERNAL_ERROR, "文件保存失败");
+            throw new BizException(ResultCode.INTERNAL_ERROR, "文件保存失败：" + e.getMessage());
+        } catch (Exception e) {
+            log.error("本地文件保存失败：未知异常, objectKey={}, target={}", objectKey, target, e);
+            throw new BizException(ResultCode.INTERNAL_ERROR, "文件保存失败，请稍后重试");
         }
     }
 

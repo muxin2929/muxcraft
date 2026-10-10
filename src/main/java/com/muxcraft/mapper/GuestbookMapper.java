@@ -18,6 +18,8 @@ public interface GuestbookMapper {
 
     int deleteById(@Param("id") Long id);
 
+    int deleteByIds(@Param("ids") List<Long> ids);
+
     Guestbook selectById(@Param("id") Long id);
 
     List<Guestbook> selectAllAdmin();

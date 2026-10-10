@@ -6,6 +6,9 @@ import com.muxcraft.dto.UserStatusDTO;
 import com.muxcraft.vo.DashboardVO;
 import com.muxcraft.vo.SiteSettingsVO;
 import com.muxcraft.vo.UserAdminVO;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
 
 /**
  * 管理员服务
@@ -14,7 +17,7 @@ public interface AdminService {
 
     DashboardVO dashboard();
 
-    PageResult<UserAdminVO> userPage(int page, int size);
+    PageResult<UserAdminVO> userPage(int page, int size, String keyword, LocalDateTime startTime, LocalDateTime endTime);
 
     void updateUserStatus(Long id, UserStatusDTO dto);
 
@@ -22,5 +25,5 @@ public interface AdminService {
 
     SiteSettingsVO getSettings();
 
-    SiteSettingsVO updateSettings(SiteSettingsDTO dto);
+    SiteSettingsVO updateSettings(SiteSettingsDTO dto, MultipartFile photo);
 }

@@ -3,6 +3,7 @@ package com.muxcraft.service;
 import com.muxcraft.dto.AdminProfileDTO;
 import com.muxcraft.vo.ProfileVO;
 import com.muxcraft.vo.SiteVO;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 站点服务
@@ -13,5 +14,5 @@ public interface SiteService {
 
     ProfileVO getProfile();
 
-    ProfileVO updateAdminProfile(AdminProfileDTO dto);
+    ProfileVO updateAdminProfile(AdminProfileDTO dto, MultipartFile photo);
 }

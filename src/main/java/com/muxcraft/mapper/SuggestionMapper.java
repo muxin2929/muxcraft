@@ -18,6 +18,8 @@ public interface SuggestionMapper {
 
     int deleteById(@Param("id") Long id);
 
+    int deleteByIds(@Param("ids") List<Long> ids);
+
     Suggestion selectById(@Param("id") Long id);
 
     int updateStatus(@Param("id") Long id, @Param("status") String status);

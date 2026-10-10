@@ -14,8 +14,6 @@ public interface ArticleMapper {
 
     Article selectById(@Param("id") Long id);
 
-    Article selectBySlug(@Param("slug") String slug);
-
     List<Article> selectPagePublished(@Param("offset") int offset, @Param("size") int size,
                                       @Param("tag") String tag);
 

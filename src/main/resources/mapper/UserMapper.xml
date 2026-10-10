@@ -41,7 +41,35 @@
     </update>
 
     <select id="selectPage" resultMap="userMap">
-        SELECT * FROM users ORDER BY id ASC LIMIT #{offset}, #{size}
+        SELECT * FROM users
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (user_id LIKE CONCAT('%', #{keyword}, '%') OR nickname LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="startTime != null">
+                AND created_at &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND created_at &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY created_at DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countPage" resultType="long">
+        SELECT COUNT(*) FROM users
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (user_id LIKE CONCAT('%', #{keyword}, '%') OR nickname LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="startTime != null">
+                AND created_at &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND created_at &lt;= #{endTime}
+            </if>
+        </where>
     </select>
 
     <select id="countAll" resultType="long">
@@ -50,10 +78,6 @@
 
     <update id="updateStatus">
         UPDATE users SET status = #{status} WHERE id = #{id}
-    </update>
-
-    <update id="updateAllAdminsAvatar">
-        UPDATE users SET avatar_url = #{avatarUrl} WHERE role = 'ADMIN'
     </update>
 
     <delete id="deleteById">

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 文章控制器
- * 接口：GET /articles、GET /articles/{slug}
+ * 接口：GET /articles、GET /articles/{id}
  */
 @RestController
 @RequestMapping("/articles")
@@ -34,8 +34,8 @@ public class ArticleController {
         return Result.success(articleService.page(page, size, tag));
     }
 
-    @GetMapping("/{slug}")
-    public Result<ArticleDetailVO> detail(@PathVariable String slug) {
-        return Result.success(articleService.detail(slug));
+    @GetMapping("/{id}")
+    public Result<ArticleDetailVO> detail(@PathVariable Long id) {
+        return Result.success(articleService.detail(id));
     }
 }

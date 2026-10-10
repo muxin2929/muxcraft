@@ -4,6 +4,7 @@ import com.muxcraft.common.PageResult;
 import com.muxcraft.dto.ExperienceDTO;
 import com.muxcraft.entity.Experience;
 import com.muxcraft.vo.ExperienceVO;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 经历服务
@@ -12,9 +13,9 @@ public interface ExperienceService {
 
     PageResult<ExperienceVO> page(int page, int size);
 
-    ExperienceVO create(ExperienceDTO dto);
+    ExperienceVO create(ExperienceDTO dto, MultipartFile cover);
 
-    ExperienceVO update(Long id, ExperienceDTO dto);
+    ExperienceVO update(Long id, ExperienceDTO dto, MultipartFile cover);
 
     void delete(Long id);
 

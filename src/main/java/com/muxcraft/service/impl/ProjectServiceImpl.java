@@ -7,16 +7,20 @@ import com.muxcraft.dto.ProjectDTO;
 import com.muxcraft.entity.Project;
 import com.muxcraft.entity.ProjectSkill;
 import com.muxcraft.entity.Skill;
+import com.muxcraft.mapper.CommentMapper;
 import com.muxcraft.mapper.ProjectMapper;
 import com.muxcraft.mapper.ProjectSkillMapper;
 import com.muxcraft.mapper.SkillMapper;
+import com.muxcraft.service.FileService;
 import com.muxcraft.service.ProjectService;
 import com.muxcraft.vo.ProjectDetailVO;
 import com.muxcraft.vo.ProjectVO;
 import com.muxcraft.vo.SkillSimpleVO;
+import com.muxcraft.vo.UploadVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +34,16 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectMapper projectMapper;
     private final ProjectSkillMapper projectSkillMapper;
     private final SkillMapper skillMapper;
+    private final CommentMapper commentMapper;
+    private final FileService fileService;
 
     public ProjectServiceImpl(ProjectMapper projectMapper, ProjectSkillMapper projectSkillMapper,
-                              SkillMapper skillMapper) {
+                              SkillMapper skillMapper, CommentMapper commentMapper, FileService fileService) {
         this.projectMapper = projectMapper;
         this.projectSkillMapper = projectSkillMapper;
         this.skillMapper = skillMapper;
+        this.commentMapper = commentMapper;
+        this.fileService = fileService;
     }
 
     @Override
@@ -61,7 +69,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
-    public ProjectVO create(ProjectDTO dto) {
+    public ProjectVO create(ProjectDTO dto, MultipartFile icon, MultipartFile cover) {
         Project project = new Project();
         BeanUtils.copyProperties(dto, project);
         if (project.getStatus() == null) {
@@ -71,13 +79,29 @@ public class ProjectServiceImpl implements ProjectService {
             project.setSortOrder(0);
         }
         projectMapper.insert(project);
+
+        boolean hasFile = false;
+        if (icon != null && !icon.isEmpty()) {
+            UploadVO vo = fileService.upload(icon, "icons");
+            project.setIconUrl(vo.getUrl());
+            hasFile = true;
+        }
+        if (cover != null && !cover.isEmpty()) {
+            UploadVO vo = fileService.upload(cover, "covers");
+            project.setCoverUrl(vo.getUrl());
+            hasFile = true;
+        }
+        if (hasFile) {
+            projectMapper.update(project);
+        }
+
         saveProjectSkills(project.getId(), dto.getSkillIds());
         return toListVO(project);
     }
 
     @Override
     @Transactional
-    public ProjectVO update(Long id, ProjectDTO dto) {
+    public ProjectVO update(Long id, ProjectDTO dto, MultipartFile icon, MultipartFile cover) {
         Project existing = projectMapper.selectById(id);
         if (existing == null) {
             throw new BizException(ResultCode.NOT_FOUND, "项目不存在");
@@ -85,6 +109,16 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = new Project();
         BeanUtils.copyProperties(dto, project);
         project.setId(id);
+
+        if (icon != null && !icon.isEmpty()) {
+            UploadVO vo = fileService.upload(icon, "icons");
+            project.setIconUrl(vo.getUrl());
+        }
+        if (cover != null && !cover.isEmpty()) {
+            UploadVO vo = fileService.upload(cover, "covers");
+            project.setCoverUrl(vo.getUrl());
+        }
+
         projectMapper.update(project);
         if (dto.getSkillIds() != null) {
             projectSkillMapper.deleteByProjectId(id);
@@ -100,6 +134,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (existing == null) {
             throw new BizException(ResultCode.NOT_FOUND, "项目不存在");
         }
+        commentMapper.deleteByProjectId(id);
         projectSkillMapper.deleteByProjectId(id);
         projectMapper.deleteById(id);
     }

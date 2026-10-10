@@ -5,6 +5,7 @@ import com.muxcraft.dto.ProjectDTO;
 import com.muxcraft.entity.Project;
 import com.muxcraft.vo.ProjectDetailVO;
 import com.muxcraft.vo.ProjectVO;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 项目服务
@@ -15,9 +16,9 @@ public interface ProjectService {
 
     ProjectDetailVO detail(Long id);
 
-    ProjectVO create(ProjectDTO dto);
+    ProjectVO create(ProjectDTO dto, MultipartFile icon, MultipartFile cover);
 
-    ProjectVO update(Long id, ProjectDTO dto);
+    ProjectVO update(Long id, ProjectDTO dto, MultipartFile icon, MultipartFile cover);
 
     void delete(Long id);
 

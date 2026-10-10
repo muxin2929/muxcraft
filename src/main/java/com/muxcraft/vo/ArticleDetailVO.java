@@ -13,6 +13,7 @@ public class ArticleDetailVO {
     private String title;
     private String slug;
     private String summary;
+    private String content;
     private String coverUrl;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -48,6 +49,14 @@ public class ArticleDetailVO {
 
     public void setSummary(String summary) {
         this.summary = summary;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public String getCoverUrl() {

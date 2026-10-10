@@ -23,10 +23,6 @@
         SELECT * FROM articles WHERE id = #{id}
     </select>
 
-    <select id="selectBySlug" resultMap="articleMap">
-        SELECT * FROM articles WHERE slug = #{slug}
-    </select>
-
     <select id="selectPagePublished" resultMap="articleMap">
         SELECT * FROM articles WHERE status = 'PUBLISHED'
         <if test="tag != null and tag != ''">

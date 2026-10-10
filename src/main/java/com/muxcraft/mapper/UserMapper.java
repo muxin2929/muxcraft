@@ -3,6 +3,7 @@ package com.muxcraft.mapper;
 import com.muxcraft.entity.User;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -20,13 +21,18 @@ public interface UserMapper {
 
     int updatePassword(@Param("id") Long id, @Param("password") String password);
 
-    List<User> selectPage(@Param("offset") int offset, @Param("size") int size);
+    List<User> selectPage(@Param("offset") int offset, @Param("size") int size,
+                          @Param("keyword") String keyword,
+                          @Param("startTime") LocalDateTime startTime,
+                          @Param("endTime") LocalDateTime endTime);
+
+    long countPage(@Param("keyword") String keyword,
+                   @Param("startTime") LocalDateTime startTime,
+                   @Param("endTime") LocalDateTime endTime);
 
     long countAll();
 
     int updateStatus(@Param("id") Long id, @Param("status") Integer status);
-
-    int updateAllAdminsAvatar(@Param("avatarUrl") String avatarUrl);
 
     int deleteById(@Param("id") Long id);
 

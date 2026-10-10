@@ -7,9 +7,12 @@ import com.muxcraft.dto.ExperienceDTO;
 import com.muxcraft.entity.Experience;
 import com.muxcraft.mapper.ExperienceMapper;
 import com.muxcraft.service.ExperienceService;
+import com.muxcraft.service.FileService;
 import com.muxcraft.vo.ExperienceVO;
+import com.muxcraft.vo.UploadVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,9 +23,11 @@ import java.util.List;
 public class ExperienceServiceImpl implements ExperienceService {
 
     private final ExperienceMapper experienceMapper;
+    private final FileService fileService;
 
-    public ExperienceServiceImpl(ExperienceMapper experienceMapper) {
+    public ExperienceServiceImpl(ExperienceMapper experienceMapper, FileService fileService) {
         this.experienceMapper = experienceMapper;
+        this.fileService = fileService;
     }
 
     @Override
@@ -35,18 +40,25 @@ public class ExperienceServiceImpl implements ExperienceService {
     }
 
     @Override
-    public ExperienceVO create(ExperienceDTO dto) {
+    public ExperienceVO create(ExperienceDTO dto, MultipartFile cover) {
         Experience experience = new Experience();
         BeanUtils.copyProperties(dto, experience);
         if (experience.getSortOrder() == null) {
             experience.setSortOrder(0);
         }
         experienceMapper.insert(experience);
+
+        if (cover != null && !cover.isEmpty()) {
+            UploadVO vo = fileService.upload(cover, "covers");
+            experience.setCoverUrl(vo.getUrl());
+            experienceMapper.update(experience);
+        }
+
         return toVO(experience);
     }
 
     @Override
-    public ExperienceVO update(Long id, ExperienceDTO dto) {
+    public ExperienceVO update(Long id, ExperienceDTO dto, MultipartFile cover) {
         Experience existing = experienceMapper.selectById(id);
         if (existing == null) {
             throw new BizException(ResultCode.NOT_FOUND, "经历不存在");
@@ -54,6 +66,12 @@ public class ExperienceServiceImpl implements ExperienceService {
         Experience experience = new Experience();
         BeanUtils.copyProperties(dto, experience);
         experience.setId(id);
+
+        if (cover != null && !cover.isEmpty()) {
+            UploadVO vo = fileService.upload(cover, "covers");
+            experience.setCoverUrl(vo.getUrl());
+        }
+
         experienceMapper.update(experience);
         return toVO(experienceMapper.selectById(id));
     }

@@ -69,6 +69,14 @@ public class GuestbookServiceImpl implements GuestbookService {
     }
 
     @Override
+    public void deleteByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+        guestbookMapper.deleteByIds(ids);
+    }
+
+    @Override
     public PageResult<GuestbookAdminVO> adminPage(int page, int size) {
         int offset = (page - 1) * size;
         List<Guestbook> list = guestbookMapper.selectAdminPage(offset, size);
@@ -101,6 +109,7 @@ public class GuestbookServiceImpl implements GuestbookService {
         vo.setCreatedAt(g.getCreatedAt());
         User user = userMapper.selectById(g.getUserId());
         if (user != null) {
+            vo.setAccount(user.getUserId());
             vo.setNickname(user.getNickname());
             vo.setAvatarUrl(user.getAvatarUrl());
         }

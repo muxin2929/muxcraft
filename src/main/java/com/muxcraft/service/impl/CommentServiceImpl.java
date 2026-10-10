@@ -4,6 +4,7 @@ import com.muxcraft.common.BizException;
 import com.muxcraft.common.PageResult;
 import com.muxcraft.common.ResultCode;
 import com.muxcraft.entity.Comment;
+import com.muxcraft.entity.Project;
 import com.muxcraft.entity.SiteSettings;
 import com.muxcraft.entity.User;
 import com.muxcraft.mapper.CommentMapper;
@@ -76,6 +77,14 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    public void deleteByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+        commentMapper.deleteByIds(ids);
+    }
+
+    @Override
     public PageResult<CommentAdminVO> adminPage(int page, int size) {
         int offset = (page - 1) * size;
         List<Comment> list = commentMapper.selectAdminPage(offset, size);
@@ -107,8 +116,15 @@ public class CommentServiceImpl implements CommentService {
         vo.setUserId(comment.getUserId());
         vo.setContent(comment.getContent());
         vo.setCreatedAt(comment.getCreatedAt());
+        if (comment.getProjectId() != null) {
+            Project project = projectMapper.selectById(comment.getProjectId());
+            if (project != null) {
+                vo.setProjectName(project.getName());
+            }
+        }
         User user = userMapper.selectById(comment.getUserId());
         if (user != null) {
+            vo.setAccount(user.getUserId());
             vo.setNickname(user.getNickname());
             vo.setAvatarUrl(user.getAvatarUrl());
         }

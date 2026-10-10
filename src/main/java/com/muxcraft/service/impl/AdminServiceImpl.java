@@ -15,11 +15,15 @@ import com.muxcraft.mapper.SiteSettingsMapper;
 import com.muxcraft.mapper.SuggestionMapper;
 import com.muxcraft.mapper.UserMapper;
 import com.muxcraft.service.AdminService;
+import com.muxcraft.service.FileService;
 import com.muxcraft.vo.DashboardVO;
 import com.muxcraft.vo.SiteSettingsVO;
+import com.muxcraft.vo.UploadVO;
 import com.muxcraft.vo.UserAdminVO;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -35,10 +39,12 @@ public class AdminServiceImpl implements AdminService {
     private final GuestbookMapper guestbookMapper;
     private final SuggestionMapper suggestionMapper;
     private final SiteSettingsMapper siteSettingsMapper;
+    private final FileService fileService;
 
     public AdminServiceImpl(UserMapper userMapper, ProjectMapper projectMapper, ArticleMapper articleMapper,
                             CommentMapper commentMapper, GuestbookMapper guestbookMapper,
-                            SuggestionMapper suggestionMapper, SiteSettingsMapper siteSettingsMapper) {
+                            SuggestionMapper suggestionMapper, SiteSettingsMapper siteSettingsMapper,
+                            FileService fileService) {
         this.userMapper = userMapper;
         this.projectMapper = projectMapper;
         this.articleMapper = articleMapper;
@@ -46,6 +52,7 @@ public class AdminServiceImpl implements AdminService {
         this.guestbookMapper = guestbookMapper;
         this.suggestionMapper = suggestionMapper;
         this.siteSettingsMapper = siteSettingsMapper;
+        this.fileService = fileService;
     }
 
     @Override
@@ -61,10 +68,10 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public PageResult<UserAdminVO> userPage(int page, int size) {
+    public PageResult<UserAdminVO> userPage(int page, int size, String keyword, LocalDateTime startTime, LocalDateTime endTime) {
         int offset = (page - 1) * size;
-        List<User> list = userMapper.selectPage(offset, size);
-        long total = userMapper.countAll();
+        List<User> list = userMapper.selectPage(offset, size, keyword, startTime, endTime);
+        long total = userMapper.countPage(keyword, startTime, endTime);
         List<UserAdminVO> records = list.stream().map(this::toAdminVO).toList();
         return new PageResult<>(records, page, size, total);
     }
@@ -100,7 +107,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public SiteSettingsVO updateSettings(SiteSettingsDTO dto) {
+    public SiteSettingsVO updateSettings(SiteSettingsDTO dto, MultipartFile photo) {
         SiteSettings settings = siteSettingsMapper.selectById(1);
         boolean isNew = (settings == null);
         if (isNew) {
@@ -125,9 +132,13 @@ public class AdminServiceImpl implements AdminService {
         } else {
             siteSettingsMapper.update(settings);
         }
-        if (dto.getPhotoUrl() != null && !dto.getPhotoUrl().isEmpty()) {
-            userMapper.updateAllAdminsAvatar(dto.getPhotoUrl());
+
+        if (photo != null && !photo.isEmpty()) {
+            UploadVO vo = fileService.upload(photo, "avatars");
+            settings.setPhotoUrl(vo.getUrl());
+            siteSettingsMapper.update(settings);
         }
+
         return toSettingsVO(siteSettingsMapper.selectById(1));
     }
 
@@ -140,6 +151,7 @@ public class AdminServiceImpl implements AdminService {
         vo.setRole(user.getRole());
         vo.setStatus(user.getStatus());
         vo.setCreatedAt(user.getCreatedAt());
+        vo.setUpdatedAt(user.getUpdatedAt());
         return vo;
     }
 
