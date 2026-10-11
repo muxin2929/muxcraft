@@ -31,3 +31,35 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+# frontend
+# Logs
+vue-muxcraft/logs
+vue-muxcraft/*.log
+vue-muxcraft/npm-debug.log*
+vue-muxcraft/yarn-debug.log*
+vue-muxcraft/yarn-error.log*
+vue-muxcraft/pnpm-debug.log*
+vue-muxcraft/lerna-debug.log*
+
+vue-muxcraft/node_modules
+vue-muxcraft/.DS_Store
+vue-muxcraft/dist
+vue-muxcraft/dist-ssr
+vue-muxcraft/coverage
+vue-muxcraft/*.local
+
+/cypress/videos/
+/cypress/screenshots/
+
+# Editor directories and files
+vue-muxcraft/.vscode/*
+!vue-muxcraft/.vscode/extensions.json
+vue-muxcraft/.idea
+vue-muxcraft/*.suo
+vue-muxcraft/*.ntvs*
+vue-muxcraft/*.njsproj
+vue-muxcraft/*.sln
+vue-muxcraft/*.sw?
+vue-muxcraft/.gitignore
