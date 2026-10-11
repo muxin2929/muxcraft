@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.muxcraft</groupId>
+        <artifactId>muxcraft</artifactId>
+        <version>1.2</version>
+    </parent>
+    <artifactId>muxcraft-interaction</artifactId>
+    <name>muxcraft-interaction</name>
+    <description>互动功能：留言、评论、建议</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.muxcraft</groupId>
+            <artifactId>muxcraft-infrastructure</artifactId>
+        </dependency>
+    </dependencies>
+</project>

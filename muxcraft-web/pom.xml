@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.muxcraft</groupId>
+        <artifactId>muxcraft</artifactId>
+        <version>1.2</version>
+    </parent>
+    <artifactId>muxcraft-web</artifactId>
+    <name>muxcraft-web</name>
+    <description>Web 层：Controller、WebSocket、启动入口</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.muxcraft</groupId>
+            <artifactId>muxcraft-system</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.muxcraft</groupId>
+            <artifactId>muxcraft-content</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.muxcraft</groupId>
+            <artifactId>muxcraft-interaction</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.muxcraft</groupId>
+            <artifactId>muxcraft-chat</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.muxcraft</groupId>
+            <artifactId>muxcraft-admin</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
