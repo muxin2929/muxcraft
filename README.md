@@ -60,7 +60,7 @@
 ## 📁 目录结构
 
 ```
-muxcraft/
+vue-muxcraft/                 # 父工程
 ├── src/                    # 前端工程
 │   ├── api/                # 接口封装
 │   ├── components/         # 通用组件（ChatWidget、MessageDetailModal…）
@@ -69,7 +69,18 @@ muxcraft/
 │   ├── i18n/               # 中英字典
 │   └── utils/              # 时间格式化等
 ├── hexo-theme-muxcraft/    # Hexo 静态博客主题
-└── (后端工程单独仓库)
+其他
+
+muxcraft/
+├── muxcraft-admin/            # 管理员后台
+├── muxcraft-chat/             # 聊天模块
+├── muxcraft-comment/          # 通用工具模块
+├── muxcraft-content/          # 内容展示模块
+├── muxcraft-infrastructure/   # 安全架构模块
+├── muxcraft-interaction/      # 互动模块
+└── muxcraft-system/           # 网站系统模块
+├── muxcraft-web/              # 主模块
+其他
 ```
 
 ---

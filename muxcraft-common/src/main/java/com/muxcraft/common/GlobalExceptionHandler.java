@@ -8,6 +8,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,8 +28,13 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(BizException.class)
-    public Result<Void> handleBizException(BizException e) {
-        return Result.fail(e.getResultCode(), e.getMessage());
+    public ResponseEntity<Result<Void>> handleBizException(BizException e) {
+        Result<Void> body = Result.fail(e.getResultCode(), e.getMessage());
+        HttpStatus status = HttpStatus.resolve(e.getResultCode().getCode());
+        if (status == null) {
+            status = HttpStatus.OK;
+        }
+        return ResponseEntity.status(status).body(body);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

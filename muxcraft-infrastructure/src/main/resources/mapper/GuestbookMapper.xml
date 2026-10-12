@@ -8,6 +8,7 @@
         <result column="reply_to_id" property="replyToId"/>
         <result column="content" property="content"/>
         <result column="created_at" property="createdAt"/>
+        <result column="blocked_by_me" property="blockedByMe" jdbcType="TINYINT" javaType="java.lang.Boolean"/>
     </resultMap>
 
     <insert id="insert" parameterType="com.muxcraft.entity.Guestbook" useGeneratedKeys="true" keyProperty="id">
@@ -15,28 +16,29 @@
     </insert>
 
     <select id="selectPage" resultMap="guestbookMap">
-        SELECT * FROM guestbook
+        SELECT
+            g.id, g.user_id, g.reply_to_id, g.content, g.created_at,
+            <choose>
+                <when test="currentUserId != null">(ub.id IS NOT NULL) AS blocked_by_me</when>
+                <otherwise>NULL AS blocked_by_me</otherwise>
+            </choose>
+        FROM guestbook g
+        <if test="currentUserId != null">
+            LEFT JOIN user_block ub ON ub.blocker_id = #{currentUserId} AND ub.blocked_id = g.user_id
+        </if>
         <where>
             <if test="currentUserId != null">
-                AND user_id NOT IN (
-                    SELECT blocked_id FROM user_block WHERE blocker_id = #{currentUserId}
-                    UNION
-                    SELECT blocker_id FROM user_block WHERE blocked_id = #{currentUserId}
-                )
+                AND g.user_id NOT IN (SELECT blocked_id FROM user_block WHERE blocker_id = #{currentUserId})
             </if>
         </where>
-        ORDER BY created_at DESC LIMIT #{offset}, #{size}
+        ORDER BY g.created_at DESC LIMIT #{offset}, #{size}
     </select>
 
     <select id="countAll" resultType="long">
         SELECT COUNT(*) FROM guestbook
         <where>
             <if test="currentUserId != null">
-                AND user_id NOT IN (
-                    SELECT blocked_id FROM user_block WHERE blocker_id = #{currentUserId}
-                    UNION
-                    SELECT blocker_id FROM user_block WHERE blocked_id = #{currentUserId}
-                )
+                AND user_id NOT IN (SELECT blocked_id FROM user_block WHERE blocker_id = #{currentUserId})
             </if>
         </where>
     </select>

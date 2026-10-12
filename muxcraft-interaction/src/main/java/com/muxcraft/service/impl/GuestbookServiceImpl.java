@@ -121,6 +121,7 @@ public class GuestbookServiceImpl implements GuestbookService {
         vo.setContent(g.getContent());
         vo.setCreatedAt(g.getCreatedAt());
         vo.setReplyToId(g.getReplyToId());
+        vo.setBlockedByMe(g.getBlockedByMe());
         User user = userMapper.selectById(g.getUserId());
         if (user != null) {
             vo.setAccount(user.getUserId());

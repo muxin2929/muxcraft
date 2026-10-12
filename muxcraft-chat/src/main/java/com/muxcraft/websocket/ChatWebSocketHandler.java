@@ -6,7 +6,6 @@ import com.muxcraft.common.JsonUtils;
 import com.muxcraft.security.JwtUtil;
 import com.muxcraft.security.LoginUser;
 import com.muxcraft.service.ChatService;
-import com.muxcraft.vo.ChatMessageVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -19,7 +18,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class ChatWebSocketHandler extends TextWebSocketHandler {
@@ -28,12 +26,12 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private final JwtUtil jwtUtil;
     private final ChatService chatService;
+    private final WebSocketSessionRegistry sessionRegistry;
 
-    private final Map<Long, WebSocketSession> sessions = new ConcurrentHashMap<>();
-
-    public ChatWebSocketHandler(JwtUtil jwtUtil, ChatService chatService) {
+    public ChatWebSocketHandler(JwtUtil jwtUtil, ChatService chatService, WebSocketSessionRegistry sessionRegistry) {
         this.jwtUtil = jwtUtil;
         this.chatService = chatService;
+        this.sessionRegistry = sessionRegistry;
     }
 
     @Override
@@ -44,8 +42,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             return;
         }
         session.getAttributes().put("loginUser", loginUser);
-        sessions.put(loginUser.getId(), session);
-        log.info("WebSocket connected: userId={}", loginUser.getId());
+        sessionRegistry.addSession(loginUser.getId(), session);
+        log.info("WebSocket connected: userId={}, session={}", loginUser.getId(), session.getId());
     }
 
     @Override
@@ -68,19 +66,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 sendError(session, "参数错误");
                 return;
             }
-            ChatMessageVO vo = chatService.sendMessage(loginUser.getId(), toUserId, content);
-            String payload = JsonUtils.getObjectMapper().writeValueAsString(Map.of(
-                    "type", "message",
-                    "id", vo.getId(),
-                    "fromUserId", vo.getFromUserId(),
-                    "toUserId", vo.getToUserId(),
-                    "content", vo.getContent(),
-                    "createdAt", vo.getCreatedAt()
-            ));
-            sendToUser(vo.getToUserId(), payload);
-            if (!vo.getFromUserId().equals(vo.getToUserId())) {
-                sendToUser(vo.getFromUserId(), payload);
-            }
+            chatService.sendMessage(loginUser.getId(), toUserId, content);
         } catch (BizException e) {
             sendError(session, e.getMessage());
         } catch (Exception e) {
@@ -117,17 +103,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    private void sendToUser(Long userId, String payload) {
-        WebSocketSession target = sessions.get(userId);
-        if (target != null && target.isOpen()) {
-            try {
-                target.sendMessage(new TextMessage(payload));
-            } catch (IOException e) {
-                log.warn("Failed to send message to userId={}: {}", userId, e.getMessage());
-            }
-        }
-    }
-
     private void sendError(WebSocketSession session, String message) throws IOException {
         if (session.isOpen()) {
             String payload = JsonUtils.getObjectMapper().writeValueAsString(Map.of("type", "error", "message", message));
@@ -138,8 +113,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private void removeSession(WebSocketSession session) {
         LoginUser loginUser = (LoginUser) session.getAttributes().get("loginUser");
         if (loginUser != null) {
-            sessions.remove(loginUser.getId(), session);
-            log.info("WebSocket disconnected: userId={}", loginUser.getId());
+            sessionRegistry.removeSession(loginUser.getId(), session);
+            log.info("WebSocket disconnected: userId={}, session={}", loginUser.getId(), session.getId());
         }
     }
 }

@@ -15,6 +15,7 @@ import com.muxcraft.mapper.UserMapper;
 import com.muxcraft.service.ChatService;
 import com.muxcraft.vo.ChatMessageVO;
 import com.muxcraft.vo.ConversationVO;
+import com.muxcraft.websocket.WebSocketSessionRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,15 +33,18 @@ public class ChatServiceImpl implements ChatService {
     private final ChatConversationMapper chatConversationMapper;
     private final ChatMessageDeletedMapper chatMessageDeletedMapper;
     private final UserMapper userMapper;
+    private final WebSocketSessionRegistry sessionRegistry;
 
     public ChatServiceImpl(ChatMessageMapper chatMessageMapper, ChatBlockMapper chatBlockMapper,
                            ChatConversationMapper chatConversationMapper,
-                           ChatMessageDeletedMapper chatMessageDeletedMapper, UserMapper userMapper) {
+                           ChatMessageDeletedMapper chatMessageDeletedMapper, UserMapper userMapper,
+                           WebSocketSessionRegistry sessionRegistry) {
         this.chatMessageMapper = chatMessageMapper;
         this.chatBlockMapper = chatBlockMapper;
         this.chatConversationMapper = chatConversationMapper;
         this.chatMessageDeletedMapper = chatMessageDeletedMapper;
         this.userMapper = userMapper;
+        this.sessionRegistry = sessionRegistry;
     }
 
     @Override
@@ -70,8 +74,16 @@ public class ChatServiceImpl implements ChatService {
         if (toUser == null) {
             throw new BizException(ResultCode.NOT_FOUND, "接收用户不存在");
         }
-        if (chatBlockMapper.existsAnyDirection(fromUserId, toUserId)) {
+        boolean blockedByMe = chatBlockMapper.selectByPair(fromUserId, toUserId) != null;
+        boolean blockedByOther = chatBlockMapper.selectByPair(toUserId, fromUserId) != null;
+        if (blockedByMe && blockedByOther) {
             throw new BizException(ResultCode.FORBIDDEN, "你们已互相屏蔽，无法聊天");
+        }
+        if (blockedByMe) {
+            throw new BizException(ResultCode.FORBIDDEN, "你已屏蔽对方，无法聊天");
+        }
+        if (blockedByOther) {
+            throw new BizException(ResultCode.FORBIDDEN, "对方已屏蔽你，无法聊天");
         }
         LocalDateTime now = LocalDateTime.now();
         ChatMessage message = new ChatMessage();
@@ -84,7 +96,9 @@ public class ChatServiceImpl implements ChatService {
         upsertConversation(fromUserId, toUserId, message.getId(), now);
         upsertConversation(toUserId, fromUserId, message.getId(), now);
 
-        return toVO(message);
+        ChatMessageVO vo = toVO(message);
+        sessionRegistry.sendMessage(toUserId, vo);
+        return vo;
     }
 
     @Override

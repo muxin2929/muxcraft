@@ -18,6 +18,8 @@ public class ConversationVO {
 
     private Boolean pinned;
 
+    private Boolean blockedByMe;
+
     public Long getUserId() {
         return userId;
     }
@@ -80,5 +82,13 @@ public class ConversationVO {
 
     public void setPinned(Boolean pinned) {
         this.pinned = pinned;
+    }
+
+    public Boolean getBlockedByMe() {
+        return blockedByMe;
+    }
+
+    public void setBlockedByMe(Boolean blockedByMe) {
+        this.blockedByMe = blockedByMe;
     }
 }

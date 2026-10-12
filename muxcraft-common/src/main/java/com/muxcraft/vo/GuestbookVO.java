@@ -22,6 +22,8 @@ public class GuestbookVO {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 
+    private Boolean blockedByMe;
+
     public Long getId() {
         return id;
     }
@@ -100,5 +102,13 @@ public class GuestbookVO {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Boolean getBlockedByMe() {
+        return blockedByMe;
+    }
+
+    public void setBlockedByMe(Boolean blockedByMe) {
+        this.blockedByMe = blockedByMe;
     }
 }

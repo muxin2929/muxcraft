@@ -29,10 +29,12 @@
             u.role AS role,
             cm.content AS lastMessage,
             cc.last_at AS lastAt,
-            (cc.pinned = 1) AS pinned
+            (cc.pinned = 1) AS pinned,
+            (ub.id IS NOT NULL) AS blockedByMe
         FROM chat_conversation cc
         JOIN users u ON u.id = cc.other_user_id
         LEFT JOIN chat_message cm ON cm.id = cc.last_message_id
+        LEFT JOIN user_block ub ON ub.blocker_id = #{userId} AND ub.blocked_id = cc.other_user_id
         WHERE cc.user_id = #{userId} AND cc.hidden = 0
         ORDER BY cc.pinned DESC, cc.last_at DESC
     </select>

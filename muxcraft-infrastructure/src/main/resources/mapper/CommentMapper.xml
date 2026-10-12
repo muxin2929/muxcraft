@@ -9,6 +9,7 @@
         <result column="reply_to_id" property="replyToId"/>
         <result column="content" property="content"/>
         <result column="created_at" property="createdAt"/>
+        <result column="blocked_by_me" property="blockedByMe" jdbcType="TINYINT" javaType="java.lang.Boolean"/>
     </resultMap>
 
     <insert id="insert" parameterType="com.muxcraft.entity.Comment" useGeneratedKeys="true" keyProperty="id">
@@ -17,18 +18,23 @@
     </insert>
 
     <select id="selectPageByProjectId" resultMap="commentMap">
-        SELECT * FROM comments
+        SELECT
+            c.id, c.project_id, c.user_id, c.reply_to_id, c.content, c.created_at,
+            <choose>
+                <when test="currentUserId != null">(ub.id IS NOT NULL) AS blocked_by_me</when>
+                <otherwise>NULL AS blocked_by_me</otherwise>
+            </choose>
+        FROM comments c
+        <if test="currentUserId != null">
+            LEFT JOIN user_block ub ON ub.blocker_id = #{currentUserId} AND ub.blocked_id = c.user_id
+        </if>
         <where>
-            project_id = #{projectId}
+            c.project_id = #{projectId}
             <if test="currentUserId != null">
-                AND user_id NOT IN (
-                    SELECT blocked_id FROM user_block WHERE blocker_id = #{currentUserId}
-                    UNION
-                    SELECT blocker_id FROM user_block WHERE blocked_id = #{currentUserId}
-                )
+                AND c.user_id NOT IN (SELECT blocked_id FROM user_block WHERE blocker_id = #{currentUserId})
             </if>
         </where>
-        ORDER BY created_at DESC LIMIT #{offset}, #{size}
+        ORDER BY c.created_at DESC LIMIT #{offset}, #{size}
     </select>
 
     <select id="countByProjectId" resultType="long">
@@ -36,11 +42,7 @@
         <where>
             project_id = #{projectId}
             <if test="currentUserId != null">
-                AND user_id NOT IN (
-                    SELECT blocked_id FROM user_block WHERE blocker_id = #{currentUserId}
-                    UNION
-                    SELECT blocker_id FROM user_block WHERE blocked_id = #{currentUserId}
-                )
+                AND user_id NOT IN (SELECT blocked_id FROM user_block WHERE blocker_id = #{currentUserId})
             </if>
         </where>
     </select>

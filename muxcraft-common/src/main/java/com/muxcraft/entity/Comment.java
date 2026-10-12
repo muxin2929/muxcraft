@@ -13,6 +13,7 @@ public class Comment {
     private Long replyToId;
     private String content;
     private LocalDateTime createdAt;
+    private Boolean blockedByMe;
 
     public Long getId() {
         return id;
@@ -60,5 +61,13 @@ public class Comment {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Boolean getBlockedByMe() {
+        return blockedByMe;
+    }
+
+    public void setBlockedByMe(Boolean blockedByMe) {
+        this.blockedByMe = blockedByMe;
     }
 }

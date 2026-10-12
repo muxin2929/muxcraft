@@ -56,7 +56,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                 request.setAttribute(LOGIN_USER_ATTR, loginUser);
             } catch (JwtException | IllegalArgumentException e) {
                 if (!isPublicGet(request)) {
-                    throw new BizException(ResultCode.UNAUTHORIZED, "Token无效或已过期");
+                    throw new BizException(ResultCode.UNAUTHORIZED, "登录状态已过期，请重新登录");
                 }
             }
         }
@@ -66,7 +66,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         if (header == null || !header.startsWith("Bearer ")) {
-            throw new BizException(ResultCode.UNAUTHORIZED, "未登录");
+            throw new BizException(ResultCode.UNAUTHORIZED, "请先登录");
         }
         return true;
     }

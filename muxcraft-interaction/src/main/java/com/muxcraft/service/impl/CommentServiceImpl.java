@@ -129,6 +129,7 @@ public class CommentServiceImpl implements CommentService {
         vo.setContent(comment.getContent());
         vo.setCreatedAt(comment.getCreatedAt());
         vo.setReplyToId(comment.getReplyToId());
+        vo.setBlockedByMe(comment.getBlockedByMe());
         User user = userMapper.selectById(comment.getUserId());
         if (user != null) {
             vo.setAccount(user.getUserId());

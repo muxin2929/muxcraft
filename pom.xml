@@ -17,7 +17,7 @@
     <description>MuXCraft Digital Workshop Backend</description>
 
     <properties>
-        <revision>1.5</revision>
+        <revision>1.8</revision>
         <java.version>17</java.version>
         <mybatis.starter.version>3.0.3</mybatis.starter.version>
         <jjwt.version>0.12.5</jjwt.version>
