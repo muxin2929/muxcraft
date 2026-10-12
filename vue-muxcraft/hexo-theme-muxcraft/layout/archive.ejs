@@ -1,0 +1,9 @@
+<h1 class="page-title">Archives</h1>
+<section class="post-list">
+  <% page.posts.each(function(post){ %>
+    <article class="post-card">
+      <div class="post-date"><%= date(post.date, 'YY-MM-DD') %></div>
+      <h2><a href="<%= url_for(post.path) %>"><%= post.title %></a></h2>
+    </article>
+  <% }) %>
+</section>

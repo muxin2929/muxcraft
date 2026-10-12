@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= config.title %> | <%= page.title || 'Home' %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="/" class="logo"><%= config.title %></a>
+  </header>
+
+  <main class="container">
+    <%- body %>
+  </main>
+
+  <footer class="footer">
+    <div class="f-brand"><%= theme.footer.copyright %></div>
+    <div class="f-sub"><%= theme.footer.sub %></div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>

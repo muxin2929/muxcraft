@@ -1,0 +1,19 @@
+<%- partial('_partial/hero') %>
+
+<section class="post-list">
+  <% page.posts.each(function(post){ %>
+    <article class="post-card">
+      <div class="post-date"><%= date(post.date, 'YY-MM-DD') %></div>
+      <h2><a href="<%= url_for(post.path) %>"><%= post.title %></a></h2>
+      <p class="post-excerpt"><%= post.excerpt || post.description || '' %></p>
+      <a class="post-more" href="<%= url_for(post.path) %>">Read more →</a>
+    </article>
+  <% }) %>
+</section>
+
+<% if (page.next || page.prev) { %>
+<div class="pager">
+  <% if (page.prev) { %><a class="prev" href="<%= url_for(page.prev_link) %>">← Newer</a><% } %>
+  <% if (page.next) { %><a class="next" href="<%= url_for(page.next_link) %>">Older →</a><% } %>
+</div>
+<% } %>

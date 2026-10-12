@@ -1,0 +1,9 @@
+navbar:
+  - name: Home
+    url: /
+footer:
+  copyright: © 2026 MuXcraft
+  sub: Built with Hexo · Theme muxcraft
+hero:
+  title: MuXcraft
+  subtitle: 木心的数字工坊

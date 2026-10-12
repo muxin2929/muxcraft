@@ -1,0 +1,13 @@
+<article class="post-full">
+  <div class="post-eyebrow"><%= date(page.date, 'YY-MM-DD') %></div>
+  <h1><%= page.title %></h1>
+  <div class="post-content">
+    <%- page.content %>
+  </div>
+  <div class="post-tags">
+    <% (page.tags && page.tags.length) { page.tags.forEach(function(t){ %>
+      <a class="tag" href="<%= url_for(t.path) %>">#<%= t.name %></a>
+    <% })} %>
+  </div>
+  <a class="back" href="/">← Back</a>
+</article>
