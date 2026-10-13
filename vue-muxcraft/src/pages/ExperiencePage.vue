@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useI18n } from '../i18n/index'
 import { getExperiences } from '../api/content'
 
@@ -7,17 +7,66 @@ const { t } = useI18n()
 const records = ref([])
 const loading = ref(true)
 const err = ref('')
+const scrollRef = ref(null)
+let isDown = false, startX = 0, scrollLeft = 0
+let wheelBound = false
 
 onMounted(async () => {
   try {
     const data = await getExperiences({ page: 1, size: 50 })
-    records.value = data.records || []
+    records.value = (data.records || []).sort((a, b) => {
+      const da = a.endDate || '9999-12-31'
+      const db = b.endDate || '9999-12-31'
+      return db.localeCompare(da)
+    })
   } catch (e) {
     err.value = e.message
   } finally {
     loading.value = false
   }
 })
+
+// 等 DOM 渲染完再绑定 wheel
+watch(loading, async (v) => {
+  if (v === false && !wheelBound) {
+    await nextTick()
+    if (scrollRef.value) {
+      scrollRef.value.addEventListener('wheel', onWheel, { passive: false })
+      wheelBound = true
+    }
+  }
+})
+
+onBeforeUnmount(() => {
+  if (scrollRef.value) {
+    scrollRef.value.removeEventListener('wheel', onWheel)
+  }
+})
+
+function onMouseDown(e) {
+  const el = scrollRef.value
+  if (!el) return
+  isDown = true
+  el.classList.add('dragging')
+  startX = e.pageX - el.offsetLeft
+  scrollLeft = el.scrollLeft
+}
+function onMouseLeave() { isDown = false; scrollRef.value?.classList.remove('dragging') }
+function onMouseUp() { isDown = false; scrollRef.value?.classList.remove('dragging') }
+function onMouseMove(e) {
+  const el = scrollRef.value
+  if (!el || !isDown) return
+  e.preventDefault()
+  const x = e.pageX - el.offsetLeft
+  el.scrollLeft = scrollLeft - (x - startX) * 1.5
+}
+// 鼠标滚轮在卡片区域时转为水平滚动
+function onWheel(e) {
+  const el = scrollRef.value
+  if (!el) return
+  e.preventDefault()
+  el.scrollLeft += e.deltaY
+}
 </script>
 
 <template>
@@ -33,7 +82,8 @@ onMounted(async () => {
     <p v-else-if="err" class="muted" style="margin-top:20px">{{ err }}</p>
     <div v-else-if="records.length===0" class="panel" style="margin-top:20px"><p class="muted">—</p></div>
 
-    <div class="h-scroll" v-else v-reveal>
+    <div ref="scrollRef" class="h-scroll" v-else v-reveal
+      @mousedown="onMouseDown" @mouseleave="onMouseLeave" @mouseup="onMouseUp" @mousemove="onMouseMove">
       <a
         v-for="n in records" :key="n.id"
         class="h-card"
@@ -59,14 +109,15 @@ onMounted(async () => {
   gap: 16px;
   overflow-x: auto;
   padding: 10px 2px 20px;
-  scroll-snap-type: x mandatory;
+  cursor: grab;
+  user-select: none;
 }
+.h-scroll.dragging { cursor: grabbing; }
 .h-scroll::-webkit-scrollbar { height: 8px }
 .h-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px }
 .h-card {
   flex: 0 0 calc((100% - 32px) / 3);
   min-width: 240px;
-  scroll-snap-align: start;
   padding: 22px;
   border: 1px solid var(--line);
   border-radius: 20px;

@@ -91,6 +91,7 @@ public class ChatServiceImpl implements ChatService {
         message.setToUserId(toUserId);
         message.setContent(content);
         message.setCreatedAt(now);
+        message.setIsRead(0);
         chatMessageMapper.insert(message);
 
         upsertConversation(fromUserId, toUserId, message.getId(), now);
@@ -188,6 +189,15 @@ public class ChatServiceImpl implements ChatService {
         List<Long> uniqueIds = new ArrayList<>(idSet);
         softDeleteMessages(uniqueIds, currentUserId);
         refreshConversationLastMessage(currentUserId, idSet);
+    }
+
+    @Override
+    public boolean markAsRead(Long currentUserId, Long fromUserId) {
+        if (currentUserId.equals(fromUserId)) {
+            return true;
+        }
+        chatMessageMapper.markAsRead(fromUserId, currentUserId);
+        return true;
     }
 
     private void softDeleteMessages(List<Long> messageIds, Long currentUserId) {

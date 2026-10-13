@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useI18n } from '../i18n/index'
 import { useUser } from '../store/user'
-import { getConversations, getMessages, sendMessage, blockUser, unblockUser } from '../api/chat'
+import { getConversations, getMessages, sendMessage, blockUser, unblockUser, markRead } from '../api/chat'
 import request from '../api/request'
 import { confirmDialog, toast } from '../composables/ui'
 import { useChatSocket } from '../composables/chatSocket'
@@ -39,7 +39,7 @@ function autoGrow() {
 let unsub = null
 
 onMounted(() => {
-  if (uState.user) connect()
+  if (uState.user) { connect(); loadConversations() }
   unsub = subscribe(onWsMessage)
 })
 onBeforeUnmount(() => unsub && unsub())
@@ -52,7 +52,7 @@ watch(() => uState.user, (u, old) => {
   messages.value = []
   open.value = false
   if (old) disconnect()
-  if (u) connect()
+  if (u) { connect(); loadConversations() }
 })
 
 // 聊天面板打开时锁定背景滚动
@@ -96,6 +96,15 @@ async function loadConversations() {
     const bs = new Set()
     list.forEach(c => { if (c.blockedByMe || c.blocked) bs.add(c.userId) })
     blockedSet.value = bs
+    // 初始化未读数量（后端返回 unreadCount）
+    const nm = {}
+    let total = 0
+    list.forEach(c => {
+      const n = c.unreadCount || 0
+      if (n > 0) { nm[c.userId] = n; total += n }
+    })
+    unreadMap.value = nm
+    unreadTotal.value = total
   } catch (e) { /* ignore */ }
 }
 
@@ -113,6 +122,8 @@ async function openConversation(conv) {
     const data = await getMessages(conv.userId, { page: 1, size: 50 })
     messages.value = (data.records || []).map(m => ({ ...m, own: m.fromUserId === uState.user.id }))
   } catch (e) { messages.value = [] }
+  // 通知后端标记已读
+  markRead(conv.userId).catch(() => {})
   await nextTick(); scrollBottom()
 }
 
@@ -152,6 +163,15 @@ async function sendMsg() {
   loadConversations()
 }
 
+// 手机端回车换行，PC 端 Enter 发送 / Shift+Enter 换行
+function onInputKeydown(e) {
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+  if (e.key === 'Enter' && !e.shiftKey && !isMobile) {
+    e.preventDefault()
+    sendMsg()
+  }
+}
+
 // 由外部触发：从详情页私聊某人。
 // 入参是留言/评论记录，其 userId 字段是作者的用户主键 id（不是记录本身的 id）。
 function openChatWith(item) {
@@ -167,7 +187,15 @@ function openChatWith(item) {
   }
   activeUserId.value = uid
   messages.value = []
+  // 清除该会话未读红点
+  if (unreadMap.value[uid]) {
+    const nm = { ...unreadMap.value }
+    delete nm[uid]
+    unreadMap.value = nm
+    unreadTotal.value = Object.values(nm).reduce((a, b) => a + b, 0)
+  }
   loadConversations()
+  markRead(uid).catch(() => {})
   getMessages(uid, { page: 1, size: 50 }).then(data => {
     messages.value = (data.records || []).map(m => ({ ...m, own: m.fromUserId === uState.user.id }))
     scrollBottom()
@@ -339,7 +367,7 @@ defineExpose({ openChatWith })
 
       <!-- 输入区 -->
       <div v-if="activeUser && uState.user" class="cp-input">
-        <textarea ref="inputRef" v-model="draft" :placeholder="t('chat.inputPh')" rows="1" @keydown.enter.exact.prevent="sendMsg" @input="autoGrow"></textarea>
+        <textarea ref="inputRef" v-model="draft" :placeholder="t('chat.inputPh')" rows="1" @keydown="onInputKeydown" @input="autoGrow"></textarea>
         <button class="cta" @click="sendMsg">{{ t('chat.send') }}</button>
       </div>
       <div v-else-if="activeUser" class="cp-input">

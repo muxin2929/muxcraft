@@ -18,7 +18,7 @@ onMounted(async () => {
   }
 })
 function stars(n) { return '★'.repeat(n || 0) + '☆'.repeat(5 - (n || 0)) }
-const flat = () => groups.value.flatMap(g => g.skills || [])
+const flat = () => groups.value.flatMap(g => g.skills || []).sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999))
 </script>
 
 <style scoped>

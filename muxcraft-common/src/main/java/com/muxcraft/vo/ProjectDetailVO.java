@@ -13,7 +13,6 @@ public class ProjectDetailVO {
     private Long id;
     private String name;
     private String slug;
-    private String iconUrl;
     private String coverUrl;
     private String summary;
     private String description;
@@ -46,14 +45,6 @@ public class ProjectDetailVO {
 
     public void setSlug(String slug) {
         this.slug = slug;
-    }
-
-    public String getIconUrl() {
-        return iconUrl;
-    }
-
-    public void setIconUrl(String iconUrl) {
-        this.iconUrl = iconUrl;
     }
 
     public String getCoverUrl() {

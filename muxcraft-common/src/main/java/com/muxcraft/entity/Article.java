@@ -11,7 +11,6 @@ public class Article {
     private String title;
     private String slug;
     private String summary;
-    private String content;
     private String coverUrl;
     private String status;
     private LocalDateTime publishedAt;
@@ -47,14 +46,6 @@ public class Article {
 
     public void setSummary(String summary) {
         this.summary = summary;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
     }
 
     public String getCoverUrl() {

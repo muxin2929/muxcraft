@@ -77,6 +77,12 @@ public class ChatController {
         return Result.success();
     }
 
+    @PostMapping("/read/{userId}")
+    public Result<Boolean> markAsRead(@PathVariable Long userId) {
+        LoginUser loginUser = AuthInterceptor.currentUser();
+        return Result.success(chatService.markAsRead(loginUser.getId(), userId));
+    }
+
     @PostMapping("/block/{userId}")
     public Result<Map<String, Boolean>> block(@PathVariable Long userId) {
         LoginUser loginUser = AuthInterceptor.currentUser();

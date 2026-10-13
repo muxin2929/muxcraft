@@ -29,3 +29,7 @@ export const deleteGuestbook = (id) =>
   request(`/guestbook/${id}`, { method: 'DELETE', auth: true })
 export const deleteComment = (id) =>
   request(`/comments/${id}`, { method: 'DELETE', auth: true })
+
+// ===== 标记会话已读 =====
+export const markRead = (userId) =>
+  request(`/chat/read/${userId}`, { method: 'POST', auth: true })

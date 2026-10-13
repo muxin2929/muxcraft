@@ -10,7 +10,6 @@ public class ProjectVO {
     private Long id;
     private String name;
     private String slug;
-    private String iconUrl;
     private String coverUrl;
     private String summary;
     private List<SkillSimpleVO> skills;
@@ -37,14 +36,6 @@ public class ProjectVO {
 
     public void setSlug(String slug) {
         this.slug = slug;
-    }
-
-    public String getIconUrl() {
-        return iconUrl;
-    }
-
-    public void setIconUrl(String iconUrl) {
-        this.iconUrl = iconUrl;
     }
 
     public String getCoverUrl() {

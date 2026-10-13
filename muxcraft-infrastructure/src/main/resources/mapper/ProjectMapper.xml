@@ -8,7 +8,6 @@
         <result column="slug" property="slug"/>
         <result column="summary" property="summary"/>
         <result column="description" property="description"/>
-        <result column="icon_url" property="iconUrl"/>
         <result column="cover_url" property="coverUrl"/>
         <result column="github_url" property="githubUrl"/>
         <result column="demo_url" property="demoUrl"/>
@@ -19,8 +18,8 @@
     </resultMap>
 
     <insert id="insert" parameterType="com.muxcraft.entity.Project" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO projects (name, slug, summary, description, icon_url, cover_url, github_url, demo_url, status, sort_order)
-        VALUES (#{name}, #{slug}, #{summary}, #{description}, #{iconUrl}, #{coverUrl}, #{githubUrl}, #{demoUrl}, #{status}, #{sortOrder})
+        INSERT INTO projects (name, slug, summary, description, cover_url, github_url, demo_url, status, sort_order)
+        VALUES (#{name}, #{slug}, #{summary}, #{description}, #{coverUrl}, #{githubUrl}, #{demoUrl}, #{status}, #{sortOrder})
     </insert>
 
     <select id="selectById" resultMap="projectMap">
@@ -68,7 +67,6 @@
             <if test="slug != null">slug = #{slug},</if>
             <if test="summary != null">summary = #{summary},</if>
             <if test="description != null">description = #{description},</if>
-            <if test="iconUrl != null">icon_url = #{iconUrl},</if>
             <if test="coverUrl != null">cover_url = #{coverUrl},</if>
             <if test="githubUrl != null">github_url = #{githubUrl},</if>
             <if test="demoUrl != null">demo_url = #{demoUrl},</if>

@@ -24,9 +24,6 @@ public class ProjectDTO {
 
     private String description;
 
-    @JsonAlias("icon_url")
-    private String iconUrl;
-
     @JsonAlias("cover_url")
     private String coverUrl;
 
@@ -74,14 +71,6 @@ public class ProjectDTO {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getIconUrl() {
-        return iconUrl;
-    }
-
-    public void setIconUrl(String iconUrl) {
-        this.iconUrl = iconUrl;
     }
 
     public String getCoverUrl() {

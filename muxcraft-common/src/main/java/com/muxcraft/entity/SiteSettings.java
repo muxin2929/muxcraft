@@ -15,7 +15,6 @@ public class SiteSettings {
     private String location;
     private String photoUrl;
     private String githubUrl;
-    private String giteeUrl;
     private String websiteUrl;
     private Integer registrationEnabled;
     private Integer guestbookEnabled;
@@ -99,14 +98,6 @@ public class SiteSettings {
 
     public void setGithubUrl(String githubUrl) {
         this.githubUrl = githubUrl;
-    }
-
-    public String getGiteeUrl() {
-        return giteeUrl;
-    }
-
-    public void setGiteeUrl(String giteeUrl) {
-        this.giteeUrl = giteeUrl;
     }
 
     public String getWebsiteUrl() {

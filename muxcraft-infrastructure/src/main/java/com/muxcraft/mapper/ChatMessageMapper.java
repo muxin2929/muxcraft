@@ -27,4 +27,8 @@ public interface ChatMessageMapper {
     List<Long> selectAllIdsByPair(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
 
     int deleteByIds(@Param("ids") List<Long> ids);
+
+    int countUnread(@Param("fromUserId") Long fromUserId, @Param("toUserId") Long toUserId);
+
+    int markAsRead(@Param("fromUserId") Long fromUserId, @Param("toUserId") Long toUserId);
 }

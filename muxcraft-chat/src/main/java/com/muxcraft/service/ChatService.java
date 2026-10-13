@@ -25,4 +25,6 @@ public interface ChatService {
     void pinConversation(Long currentUserId, Long otherUserId, boolean pinned);
 
     void deleteMessages(Long currentUserId, List<Long> ids);
+
+    boolean markAsRead(Long currentUserId, Long fromUserId);
 }

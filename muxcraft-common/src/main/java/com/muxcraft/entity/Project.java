@@ -15,7 +15,6 @@ public class Project {
     private String slug;
     private String summary;
     private String description;
-    private String iconUrl;
     private String coverUrl;
     private String githubUrl;
     private String demoUrl;
@@ -65,14 +64,6 @@ public class Project {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getIconUrl() {
-        return iconUrl;
-    }
-
-    public void setIconUrl(String iconUrl) {
-        this.iconUrl = iconUrl;
     }
 
     public String getCoverUrl() {

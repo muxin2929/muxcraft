@@ -9,6 +9,15 @@ public class ChatMessage {
     private Long toUserId;
     private String content;
     private LocalDateTime createdAt;
+    private Integer isRead;
+
+    public Integer getIsRead() {
+        return isRead;
+    }
+
+    public void setIsRead(Integer isRead) {
+        this.isRead = isRead;
+    }
 
     public Long getId() {
         return id;

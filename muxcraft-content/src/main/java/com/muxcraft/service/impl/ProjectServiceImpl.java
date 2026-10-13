@@ -81,11 +81,6 @@ public class ProjectServiceImpl implements ProjectService {
         projectMapper.insert(project);
 
         boolean hasFile = false;
-        if (icon != null && !icon.isEmpty()) {
-            UploadVO vo = fileService.upload(icon, "icons");
-            project.setIconUrl(vo.getUrl());
-            hasFile = true;
-        }
         if (cover != null && !cover.isEmpty()) {
             UploadVO vo = fileService.upload(cover, "covers");
             project.setCoverUrl(vo.getUrl());
@@ -110,10 +105,6 @@ public class ProjectServiceImpl implements ProjectService {
         BeanUtils.copyProperties(dto, project);
         project.setId(id);
 
-        if (icon != null && !icon.isEmpty()) {
-            UploadVO vo = fileService.upload(icon, "icons");
-            project.setIconUrl(vo.getUrl());
-        }
         if (cover != null && !cover.isEmpty()) {
             UploadVO vo = fileService.upload(cover, "covers");
             project.setCoverUrl(vo.getUrl());
@@ -183,7 +174,6 @@ public class ProjectServiceImpl implements ProjectService {
         vo.setId(project.getId());
         vo.setName(project.getName());
         vo.setSlug(project.getSlug());
-        vo.setIconUrl(project.getIconUrl());
         vo.setCoverUrl(project.getCoverUrl());
         vo.setSummary(project.getSummary());
         vo.setSkills(getSkillSimples(project.getId()));

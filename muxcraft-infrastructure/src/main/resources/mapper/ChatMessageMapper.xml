@@ -8,11 +8,12 @@
         <result column="to_user_id" property="toUserId"/>
         <result column="content" property="content"/>
         <result column="created_at" property="createdAt"/>
+        <result column="is_read" property="isRead"/>
     </resultMap>
 
     <insert id="insert" parameterType="com.muxcraft.entity.ChatMessage" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO chat_message (from_user_id, to_user_id, content, created_at)
-        VALUES (#{fromUserId}, #{toUserId}, #{content}, #{createdAt})
+        INSERT INTO chat_message (from_user_id, to_user_id, content, created_at, is_read)
+        VALUES (#{fromUserId}, #{toUserId}, #{content}, #{createdAt}, #{isRead})
     </insert>
 
     <select id="selectByPair" resultMap="messageMap">
@@ -64,5 +65,15 @@
             #{id}
         </foreach>
     </delete>
+
+    <select id="countUnread" resultType="int">
+        SELECT COUNT(*) FROM chat_message
+        WHERE from_user_id = #{fromUserId} AND to_user_id = #{toUserId} AND is_read = 0
+    </select>
+
+    <update id="markAsRead">
+        UPDATE chat_message SET is_read = 1
+        WHERE from_user_id = #{fromUserId} AND to_user_id = #{toUserId} AND is_read = 0
+    </update>
 
 </mapper>

@@ -7,7 +7,6 @@
         <result column="title" property="title"/>
         <result column="slug" property="slug"/>
         <result column="summary" property="summary"/>
-        <result column="content" property="content"/>
         <result column="cover_url" property="coverUrl"/>
         <result column="status" property="status"/>
         <result column="published_at" property="publishedAt"/>
@@ -15,8 +14,8 @@
     </resultMap>
 
     <insert id="insert" parameterType="com.muxcraft.entity.Article" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO articles (title, slug, summary, content, cover_url, status, published_at)
-        VALUES (#{title}, #{slug}, #{summary}, #{content}, #{coverUrl}, #{status}, #{publishedAt})
+        INSERT INTO articles (title, slug, summary, cover_url, status, published_at)
+        VALUES (#{title}, #{slug}, #{summary}, #{coverUrl}, #{status}, #{publishedAt})
     </insert>
 
     <select id="selectById" resultMap="articleMap">
@@ -25,17 +24,11 @@
 
     <select id="selectPagePublished" resultMap="articleMap">
         SELECT * FROM articles WHERE status = 'PUBLISHED'
-        <if test="tag != null and tag != ''">
-            AND content LIKE CONCAT('%', #{tag}, '%')
-        </if>
         ORDER BY published_at DESC LIMIT #{offset}, #{size}
     </select>
 
     <select id="countPublished" resultType="long">
         SELECT COUNT(*) FROM articles WHERE status = 'PUBLISHED'
-        <if test="tag != null and tag != ''">
-            AND content LIKE CONCAT('%', #{tag}, '%')
-        </if>
     </select>
 
     <update id="update" parameterType="com.muxcraft.entity.Article">
@@ -44,7 +37,6 @@
             <if test="title != null">title = #{title},</if>
             <if test="slug != null">slug = #{slug},</if>
             <if test="summary != null">summary = #{summary},</if>
-            <if test="content != null">content = #{content},</if>
             <if test="coverUrl != null">cover_url = #{coverUrl},</if>
             <if test="status != null">status = #{status},</if>
             <if test="publishedAt != null">published_at = #{publishedAt},</if>

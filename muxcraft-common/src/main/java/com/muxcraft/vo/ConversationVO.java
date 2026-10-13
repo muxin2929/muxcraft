@@ -20,6 +20,8 @@ public class ConversationVO {
 
     private Boolean blockedByMe;
 
+    private Integer unreadCount;
+
     public Long getUserId() {
         return userId;
     }
@@ -90,5 +92,13 @@ public class ConversationVO {
 
     public void setBlockedByMe(Boolean blockedByMe) {
         this.blockedByMe = blockedByMe;
+    }
+
+    public Integer getUnreadCount() {
+        return unreadCount;
+    }
+
+    public void setUnreadCount(Integer unreadCount) {
+        this.unreadCount = unreadCount;
     }
 }

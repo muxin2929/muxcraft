@@ -48,7 +48,8 @@ const schemas = {
     { k: 'category', l: '分类', type: 'singleselect', options: ['frontend', 'backend', 'tool'] },
     { k: 'description', l: '描述', type: 'textarea', wide: true },
     { k: 'iconUrl', l: '图标', type: 'image' },
-    { k: 'rating', l: '熟练度(1-5)', type: 'number' }
+    { k: 'rating', l: '熟练度(1-5)', type: 'number', short: true },
+    { k: 'sortOrder', l: '排序', type: 'number', short: true }
   ],
   articles: [
     { k: 'title', l: '标题' },

@@ -13,7 +13,6 @@
         <result column="location" property="location"/>
         <result column="photo_url" property="photoUrl"/>
         <result column="github_url" property="githubUrl"/>
-        <result column="gitee_url" property="giteeUrl"/>
         <result column="website_url" property="websiteUrl"/>
         <result column="registration_enabled" property="registrationEnabled"/>
         <result column="guestbook_enabled" property="guestbookEnabled"/>
@@ -36,7 +35,6 @@
             <if test="location != null">location = #{location},</if>
             <if test="photoUrl != null">photo_url = #{photoUrl},</if>
             <if test="githubUrl != null">github_url = #{githubUrl},</if>
-            <if test="giteeUrl != null">gitee_url = #{giteeUrl},</if>
             <if test="websiteUrl != null">website_url = #{websiteUrl},</if>
             <if test="registrationEnabled != null">registration_enabled = #{registrationEnabled},</if>
             <if test="guestbookEnabled != null">guestbook_enabled = #{guestbookEnabled},</if>
@@ -47,10 +45,10 @@
 
     <insert id="insert" parameterType="com.muxcraft.entity.SiteSettings" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO site_settings (id, site_title, site_description, profile_name, profile_title,
-            short_intro, full_intro, location, photo_url, github_url, gitee_url, website_url,
+            short_intro, full_intro, location, photo_url, github_url, website_url,
             registration_enabled, guestbook_enabled, comment_enabled)
         VALUES (#{id}, #{siteTitle}, #{siteDescription}, #{profileName}, #{profileTitle},
-            #{shortIntro}, #{fullIntro}, #{location}, #{photoUrl}, #{githubUrl}, #{giteeUrl}, #{websiteUrl},
+            #{shortIntro}, #{fullIntro}, #{location}, #{photoUrl}, #{githubUrl}, #{websiteUrl},
             #{registrationEnabled}, #{guestbookEnabled}, #{commentEnabled})
     </insert>
 
