@@ -25,7 +25,7 @@
 - **项目板块**：项目卡片横向滚动，封面图渐变叠加，点击进入详情（GITHUB / DEMO 双按钮）
 - **技术栈**：按分类分组展示（前端 / 后端 / 工具）
 - **经历节点**：时间线排布
-- **博客 / 文章**：Hexo 静态生成，托管 GitHub Pages
+- **博客 / 文章**：Hexo + workflow 静态生成，存储 服务器/GitHub Pages
 - **留言板**：登录后留言、回复（嵌套"回复 xxx"标识）、头像渲染、管理员角标
 - **i18n**：中英一键切换（MuXcraft ↔ 木心工坊）
 
@@ -60,27 +60,27 @@
 ## 📁 目录结构
 
 ```
-vue-muxcraft/                 # 父工程
-├── src/                    # 前端工程
-│   ├── api/                # 接口封装
-│   ├── components/         # 通用组件（ChatWidget、MessageDetailModal…）
-│   ├── pages/              # 页面
-│   ├── composables/        # WebSocket / UI 反馈
-│   ├── i18n/               # 中英字典
-│   └── utils/              # 时间格式化等
-├── hexo-theme-muxcraft/    # Hexo 静态博客主题
-其他
 
-muxcraft/
+muxcraft/                      # 父工程
 ├── muxcraft-admin/            # 管理员后台
 ├── muxcraft-chat/             # 聊天模块
 ├── muxcraft-comment/          # 通用工具模块
 ├── muxcraft-content/          # 内容展示模块
 ├── muxcraft-infrastructure/   # 安全架构模块
 ├── muxcraft-interaction/      # 互动模块
-└── muxcraft-system/           # 网站系统模块
+├── muxcraft-system/           # 网站系统模块
 ├── muxcraft-web/              # 主模块
-其他
+├──vue-muxcraft/              
+其他├── src/                    # 前端工程
+    │   ├── api/                # 接口封装
+    │   ├── components/         # 通用组件（ChatWidget、MessageDetailModal…）
+    │   ├── pages/              # 页面
+    │   ├── composables/        # WebSocket / UI 反馈
+    │   ├── i18n/               # 中英字典
+    │   └── utils/              # 时间格式化等
+    ├── hexo-theme-muxcraft/    # Hexo 静态博客主题
+    其他
+
 ```
 
 ---
