@@ -30,7 +30,7 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
+#.vscode/
 
 
 # frontend
@@ -63,3 +63,5 @@ vue-muxcraft/*.njsproj
 vue-muxcraft/*.sln
 vue-muxcraft/*.sw?
 vue-muxcraft/.gitignore
+vue-muxcraft/vite-err.txt
+vue-muxcraft/vite-out.txt
