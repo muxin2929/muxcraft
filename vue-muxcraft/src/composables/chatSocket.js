@@ -1,5 +1,6 @@
 // WebSocket 聊天连接单例
 import { reactive } from 'vue'
+import { getAccessToken } from '../api/request'
 
 const state = reactive({
   ws: null,
@@ -18,7 +19,7 @@ let reconnectTimer = null
 
 function connect() {
   if (state.ws && (state.ws.readyState === WebSocket.OPEN || state.ws.readyState === WebSocket.CONNECTING)) return
-  const token = localStorage.getItem('mux-token')
+  const token = getAccessToken()
   if (!token) return
   manualClose = false
   const url = `${wsUrl()}?token=${encodeURIComponent(token)}`
@@ -41,13 +42,11 @@ function connect() {
     state.ws = null
     // 鉴权失败（token 无效/过期）：清空登录态并刷新，不重连
     if (event.code === 1008) {
-      localStorage.removeItem('mux-token')
-      localStorage.removeItem('mux-user')
       window.dispatchEvent(new CustomEvent('auth:logout'))
       return
     }
     // 非手动关闭时自动重连
-    if (!manualClose && localStorage.getItem('mux-token')) {
+    if (!manualClose && getAccessToken()) {
       clearTimeout(reconnectTimer)
       reconnectTimer = setTimeout(connect, 3000)
     }

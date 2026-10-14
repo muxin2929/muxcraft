@@ -2,7 +2,7 @@ package com.muxcraft.service;
 
 import com.muxcraft.dto.SkillDTO;
 import com.muxcraft.entity.Skill;
-import com.muxcraft.vo.SkillCategoryVO;
+import com.muxcraft.vo.SkillVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface SkillService {
 
-    List<SkillCategoryVO> listGroupedByCategory();
+    List<SkillVO> list();
 
     Skill create(SkillDTO dto, MultipartFile icon);
 

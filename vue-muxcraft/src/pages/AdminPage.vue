@@ -2,7 +2,7 @@
 import { ref, reactive, onMounted, watch, onBeforeUnmount, inject, computed } from 'vue'
 import { useI18n } from '../i18n/index'
 import { useUser } from '../store/user'
-import request from '../api/request'
+import request, { getAccessToken } from '../api/request'
 import { toast, confirmDialog } from '../composables/ui'
 import { fmtDateTime } from '../utils/time'
 const { t } = useI18n()
@@ -223,7 +223,8 @@ async function saveSettings() {
     const fd = buildFormData(settings, fields)
     const res = await fetch('/api/admin/settings', {
       method: 'PUT',
-      headers: { Authorization: 'Bearer ' + (localStorage.getItem('mux-token') || '') },
+      headers: { Authorization: 'Bearer ' + (getAccessToken() || '') },
+      credentials: 'include',
       body: fd
     })
     const json = await res.json()
@@ -342,7 +343,8 @@ async function saveItem() {
       : `/api/admin/${active.value}/${editing.value.id}`
     const res = await fetch(url, {
       method: isNew.value ? 'POST' : 'PUT',
-      headers: { Authorization: 'Bearer ' + (localStorage.getItem('mux-token') || '') },
+      headers: { Authorization: 'Bearer ' + (getAccessToken() || '') },
+      credentials: 'include',
       body: fd
     })
     const json = await res.json()

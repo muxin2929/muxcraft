@@ -105,12 +105,16 @@ public class ProjectServiceImpl implements ProjectService {
         BeanUtils.copyProperties(dto, project);
         project.setId(id);
 
+        String oldCoverUrl = existing.getCoverUrl();
         if (cover != null && !cover.isEmpty()) {
             UploadVO vo = fileService.upload(cover, "covers");
             project.setCoverUrl(vo.getUrl());
         }
 
         projectMapper.update(project);
+        if (cover != null && !cover.isEmpty() && oldCoverUrl != null && !oldCoverUrl.isEmpty()) {
+            fileService.delete(oldCoverUrl);
+        }
         if (dto.getSkillIds() != null) {
             projectSkillMapper.deleteByProjectId(id);
             saveProjectSkills(id, dto.getSkillIds());
@@ -125,9 +129,13 @@ public class ProjectServiceImpl implements ProjectService {
         if (existing == null) {
             throw new BizException(ResultCode.NOT_FOUND, "项目不存在");
         }
+        String coverUrl = existing.getCoverUrl();
         commentMapper.deleteByProjectId(id);
         projectSkillMapper.deleteByProjectId(id);
         projectMapper.deleteById(id);
+        if (coverUrl != null && !coverUrl.isEmpty()) {
+            fileService.delete(coverUrl);
+        }
     }
 
     @Override

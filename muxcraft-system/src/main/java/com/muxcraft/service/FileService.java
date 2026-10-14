@@ -13,4 +13,6 @@ public interface FileService {
     UploadVO uploadAdmin(MultipartFile file, String type);
 
     UploadVO upload(MultipartFile file, String category);
+
+    void delete(String fileUrl);
 }

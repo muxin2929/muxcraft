@@ -2,7 +2,7 @@ package com.muxcraft.controller;
 
 import com.muxcraft.common.Result;
 import com.muxcraft.service.SkillService;
-import com.muxcraft.vo.SkillCategoryVO;
+import com.muxcraft.vo.SkillVO;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +24,7 @@ public class SkillController {
     }
 
     @GetMapping
-    public Result<List<SkillCategoryVO>> list() {
-        return Result.success(skillService.listGroupedByCategory());
+    public Result<List<SkillVO>> list() {
+        return Result.success(skillService.list());
     }
 }

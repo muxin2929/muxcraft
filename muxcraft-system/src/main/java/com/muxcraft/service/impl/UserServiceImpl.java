@@ -36,13 +36,19 @@ public class UserServiceImpl implements UserService {
             throw new BizException(ResultCode.NOT_FOUND, "用户不存在");
         }
 
+        String oldAvatarUrl = user.getAvatarUrl();
         String avatarUrl = dto.getAvatarUrl();
+        boolean replaced = false;
         if (avatar != null && !avatar.isEmpty()) {
             UploadVO vo = fileService.uploadAvatar(id, avatar);
             avatarUrl = vo.getUrl();
+            replaced = true;
         }
 
         userMapper.updateProfile(id, dto.getNickname(), avatarUrl);
+        if (replaced && oldAvatarUrl != null && !oldAvatarUrl.isEmpty()) {
+            fileService.delete(oldAvatarUrl);
+        }
         User updated = userMapper.selectById(id);
         return new UserVO(updated.getId(), updated.getUserId(), updated.getNickname(),
                 updated.getAvatarUrl(), updated.getRole());
@@ -55,7 +61,10 @@ public class UserServiceImpl implements UserService {
             throw new BizException(ResultCode.NOT_FOUND, "用户不存在");
         }
         if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
-            throw new BizException(ResultCode.UNPROCESSABLE, "旧密码错误");
+            throw new BizException(ResultCode.BAD_REQUEST, "原密码不正确");
+        }
+        if (dto.getNewPassword() == null || dto.getNewPassword().length() < 8) {
+            throw new BizException(ResultCode.BAD_REQUEST, "新密码至少 8 位");
         }
         userMapper.updatePassword(id, passwordEncoder.encode(dto.getNewPassword()));
     }

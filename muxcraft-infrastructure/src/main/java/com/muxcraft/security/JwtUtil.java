@@ -11,10 +11,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 /**
- * JWT 工具类，负责签发与解析 Token
+ * JWT 工具类，负责签发与解析 Access Token / Refresh Token
  */
 @Component
 public class JwtUtil {
+
+    private static final String CLAIM_TYPE = "type";
+    private static final String TYPE_ACCESS = "access";
+    private static final String TYPE_REFRESH = "refresh";
 
     @Value("${jwt.secret}")
     private String secret;
@@ -22,11 +26,18 @@ public class JwtUtil {
     @Value("${jwt.expire-seconds}")
     private long expireSeconds;
 
+    @Value("${jwt.refresh-expire-seconds}")
+    private long refreshExpireSeconds;
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(Long id, String userId, String nickname, String avatarUrl, String role) {
+        return generateAccessToken(id, userId, nickname, avatarUrl, role);
+    }
+
+    public String generateAccessToken(Long id, String userId, String nickname, String avatarUrl, String role) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + expireSeconds * 1000);
         return Jwts.builder()
@@ -35,6 +46,19 @@ public class JwtUtil {
                 .claim("nickname", nickname)
                 .claim("avatarUrl", avatarUrl)
                 .claim("role", role)
+                .claim(CLAIM_TYPE, TYPE_ACCESS)
+                .issuedAt(now)
+                .expiration(expiration)
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    public String generateRefreshToken(Long id) {
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + refreshExpireSeconds * 1000);
+        return Jwts.builder()
+                .subject(String.valueOf(id))
+                .claim(CLAIM_TYPE, TYPE_REFRESH)
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(getSigningKey())
@@ -51,6 +75,10 @@ public class JwtUtil {
 
     public LoginUser getLoginUser(String token) {
         Claims claims = parseToken(token);
+        String type = claims.get(CLAIM_TYPE, String.class);
+        if (!TYPE_ACCESS.equals(type)) {
+            throw new IllegalArgumentException("invalid token type");
+        }
         LoginUser loginUser = new LoginUser();
         loginUser.setId(Long.valueOf(claims.getSubject()));
         loginUser.setUserId(claims.get("userId", String.class));
@@ -60,7 +88,20 @@ public class JwtUtil {
         return loginUser;
     }
 
+    public Long parseRefreshToken(String token) {
+        Claims claims = parseToken(token);
+        String type = claims.get(CLAIM_TYPE, String.class);
+        if (!TYPE_REFRESH.equals(type)) {
+            throw new IllegalArgumentException("invalid token type");
+        }
+        return Long.valueOf(claims.getSubject());
+    }
+
     public long getExpireSeconds() {
         return expireSeconds;
+    }
+
+    public long getRefreshExpireSeconds() {
+        return refreshExpireSeconds;
     }
 }

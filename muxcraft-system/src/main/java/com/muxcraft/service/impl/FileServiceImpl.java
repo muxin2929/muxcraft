@@ -38,6 +38,7 @@ public class FileServiceImpl implements FileService {
 
     private static final Logger log = LoggerFactory.getLogger(FileServiceImpl.class);
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp", "gif");
+    private static final Set<String> CATEGORY_PREFIXES = Set.of("avatars/", "covers/", "icons/", "common/");
     private static final long AVATAR_MAX_SIZE = 5 * 1024 * 1024;
     private static final long UPLOAD_MAX_SIZE = 2 * 1024 * 1024;
     private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy/MM");
@@ -78,6 +79,54 @@ public class FileServiceImpl implements FileService {
         String monthPath = LocalDate.now().format(MONTH_FORMATTER);
         String objectKey = cat + "/" + monthPath + "/" + UUID.randomUUID() + "." + ext;
         return saveFile(file, objectKey);
+    }
+
+    @Override
+    public void delete(String fileUrl) {
+        if (fileUrl == null || fileUrl.isBlank()) {
+            return;
+        }
+        String objectKey = extractObjectKey(fileUrl);
+        if (objectKey == null) {
+            log.warn("无法从 URL 解析 objectKey，跳过删除: {}", fileUrl);
+            return;
+        }
+        deleteFromOss(objectKey);
+        deleteFromLocal(objectKey);
+    }
+
+    private String extractObjectKey(String fileUrl) {
+        for (String prefix : CATEGORY_PREFIXES) {
+            int idx = fileUrl.indexOf(prefix);
+            if (idx >= 0) {
+                return fileUrl.substring(idx);
+            }
+        }
+        return null;
+    }
+
+    private void deleteFromOss(String objectKey) {
+        OSS client = ossClientFactory.getClient();
+        if (client == null) {
+            return;
+        }
+        try {
+            client.deleteObject(ossClientFactory.getBucketName(), objectKey);
+            log.info("OSS 文件删除成功: {}", objectKey);
+        } catch (Exception e) {
+            log.warn("OSS 文件删除失败: {}, error={}", objectKey, e.getMessage());
+        }
+    }
+
+    private void deleteFromLocal(String objectKey) {
+        Path target = Paths.get(fileProperties.getLocalPath(), objectKey).toAbsolutePath();
+        try {
+            if (Files.deleteIfExists(target)) {
+                log.info("本地文件删除成功: {}", objectKey);
+            }
+        } catch (IOException e) {
+            log.warn("本地文件删除失败: {}, error={}", objectKey, e.getMessage());
+        }
     }
 
     private UploadVO saveFile(MultipartFile file, String objectKey) {

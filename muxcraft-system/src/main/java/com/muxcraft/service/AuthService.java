@@ -15,4 +15,8 @@ public interface AuthService {
     LoginVO login(LoginDTO dto);
 
     UserVO me(Long userId);
+
+    LoginVO refresh(String refreshToken);
+
+    void logout();
 }

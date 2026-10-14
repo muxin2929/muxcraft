@@ -74,6 +74,8 @@ function onWsMessage(msg) {
   if (fromId === activeUserId.value && open.value) {
     getMessages(activeUserId.value, { page: 1, size: 50 }).then(data => {
       messages.value = (data.records || []).map(m => ({ ...m, own: Number(m.fromUserId) === myId }))
+      // 聊天窗口刷新记录后更新在线时间
+      markRead(activeUserId.value).catch(() => {})
       scrollBottom()
     }).catch(() => {
       messages.value.push({ ...msg, own: false })
@@ -121,9 +123,9 @@ async function openConversation(conv) {
   try {
     const data = await getMessages(conv.userId, { page: 1, size: 50 })
     messages.value = (data.records || []).map(m => ({ ...m, own: m.fromUserId === uState.user.id }))
+    // 聊天记录刷新成功后再通知后端标记已读 / 更新在线时间
+    markRead(conv.userId).catch(() => {})
   } catch (e) { messages.value = [] }
-  // 通知后端标记已读
-  markRead(conv.userId).catch(() => {})
   await nextTick(); scrollBottom()
 }
 
@@ -155,6 +157,10 @@ async function sendMsg() {
     // 拉取最新消息
     const data = await getMessages(activeUserId.value, { page: 1, size: 50 })
     messages.value = (data.records || []).map(m => ({ ...m, own: Number(m.fromUserId) === Number(uState.user.id) }))
+    // 刷新后更新在线时间
+    markRead(activeUserId.value).catch(() => {})
+    // 保持输入框焦点，避免手机端输入法关闭
+    inputRef.value?.focus()
   } catch (e) {
     toast(e.message || t('chat.sendFail'), 'error')
   }
@@ -195,9 +201,10 @@ function openChatWith(item) {
     unreadTotal.value = Object.values(nm).reduce((a, b) => a + b, 0)
   }
   loadConversations()
-  markRead(uid).catch(() => {})
   getMessages(uid, { page: 1, size: 50 }).then(data => {
     messages.value = (data.records || []).map(m => ({ ...m, own: m.fromUserId === uState.user.id }))
+    // 聊天记录刷新成功后再标记已读 / 更新在线时间
+    markRead(uid).catch(() => {})
     scrollBottom()
   }).catch(() => { messages.value = [] })
 }
@@ -328,7 +335,7 @@ defineExpose({ openChatWith })
       </div>
 
       <!-- 会话列表 -->
-      <div v-if="!activeUser" class="cp-body">
+      <div v-if="!activeUser" class="cp-body" @touchmove.stop>
         <p v-if="!uState.user" class="muted empty">{{ t('chat.loginFirst') }}</p>
         <p v-else-if="!conversations.length" class="muted empty">{{ t('chat.empty') }}</p>
         <div v-else class="conv-list">
@@ -350,7 +357,7 @@ defineExpose({ openChatWith })
       </div>
 
       <!-- 聊天窗口 -->
-      <div v-else class="cp-body chat-body" ref="listRef">
+      <div v-else class="cp-body chat-body" ref="listRef" @touchmove.stop>
         <p v-if="!messages.length" class="muted empty">{{ t('chat.noMsg') }}</p>
         <div v-for="m in messages" :key="m.id" class="msg-row" :class="{ own: m.own, selected: selectedMsgIds.has(m.id) }" @click="selectMode && toggleSelectMsg(m)">
           <label v-if="selectMode" class="msg-check"><input type="checkbox" :checked="selectedMsgIds.has(m.id)" @click.stop @change="toggleSelectMsg(m)" /></label>

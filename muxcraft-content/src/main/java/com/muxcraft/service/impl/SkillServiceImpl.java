@@ -7,7 +7,6 @@ import com.muxcraft.entity.Skill;
 import com.muxcraft.mapper.SkillMapper;
 import com.muxcraft.service.FileService;
 import com.muxcraft.service.SkillService;
-import com.muxcraft.vo.SkillCategoryVO;
 import com.muxcraft.vo.SkillVO;
 import com.muxcraft.vo.UploadVO;
 import org.springframework.beans.BeanUtils;
@@ -15,9 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -37,9 +34,9 @@ public class SkillServiceImpl implements SkillService {
     }
 
     @Override
-    public List<SkillCategoryVO> listGroupedByCategory() {
+    public List<SkillVO> list() {
         List<Skill> skills = skillMapper.selectAllEnabled();
-        Map<String, List<SkillVO>> grouped = new LinkedHashMap<>();
+        List<SkillVO> result = new ArrayList<>();
         for (Skill skill : skills) {
             SkillVO vo = new SkillVO();
             vo.setId(skill.getId());
@@ -47,11 +44,7 @@ public class SkillServiceImpl implements SkillService {
             vo.setIconUrl(skill.getIconUrl());
             vo.setRating(skill.getRating());
             vo.setDescription(skill.getDescription());
-            grouped.computeIfAbsent(skill.getCategory(), k -> new ArrayList<>()).add(vo);
-        }
-        List<SkillCategoryVO> result = new ArrayList<>();
-        for (Map.Entry<String, List<SkillVO>> entry : grouped.entrySet()) {
-            result.add(new SkillCategoryVO(entry.getKey(), entry.getValue()));
+            result.add(vo);
         }
         return result;
     }
@@ -92,12 +85,16 @@ public class SkillServiceImpl implements SkillService {
         BeanUtils.copyProperties(dto, skill);
         skill.setId(id);
 
+        String oldIconUrl = existing.getIconUrl();
         if (icon != null && !icon.isEmpty()) {
             UploadVO vo = fileService.upload(icon, "icons");
             skill.setIconUrl(vo.getUrl());
         }
 
         skillMapper.update(skill);
+        if (icon != null && !icon.isEmpty() && oldIconUrl != null && !oldIconUrl.isEmpty()) {
+            fileService.delete(oldIconUrl);
+        }
         return skillMapper.selectById(id);
     }
 
@@ -107,7 +104,11 @@ public class SkillServiceImpl implements SkillService {
         if (existing == null) {
             throw new BizException(ResultCode.NOT_FOUND, "技术栈不存在");
         }
+        String iconUrl = existing.getIconUrl();
         skillMapper.deleteById(id);
+        if (iconUrl != null && !iconUrl.isEmpty()) {
+            fileService.delete(iconUrl);
+        }
     }
 
     @Override

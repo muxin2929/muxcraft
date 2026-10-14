@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from '../i18n/index'
 import AvatarBubble from '../components/AvatarBubble.vue'
+import Turnstile from '../components/Turnstile.vue'
 
 const router = useRouter()
 const { t, state } = useI18n()
@@ -12,12 +13,13 @@ const nickname = ref('')
 const password = ref('')
 const confirm = ref('')
 const showPwd = ref(false)
-const avatarFile = ref(null)       // 选中的文件，注册时一起 multipart 提交
-const avatarPreview = ref('')      // 本地预览（objectURL）
+const avatarFile = ref(null)
+const avatarPreview = ref('')
 const err = ref('')
 const ok = ref('')
 const loading = ref(false)
 const fileInput = ref(null)
+const turnstileRef = ref(null)
 
 function pickAvatar() { fileInput.value?.click() }
 function onFile(e) {
@@ -36,19 +38,22 @@ async function submit() {
   if (!nickname.value.trim() || nickname.value.trim().length > 32) return (err.value = t('register.err.nickname'))
   if (password.value.length < 8) return (err.value = t('register.err.password'))
   if (password.value !== confirm.value) return (err.value = t('register.err.confirm'))
+  const cfToken = turnstileRef.value?.token || ''
 
   const fd = new FormData()
   fd.append('userId', userId.value.trim())
   fd.append('nickname', nickname.value.trim())
   fd.append('password', password.value)
+  fd.append('cf-turnstile-response', cfToken)
   if (avatarFile.value) fd.append('avatar', avatarFile.value)
 
   loading.value = true
   try {
-    const res = await fetch('/api/auth/register', { method: 'POST', body: fd })
+    const res = await fetch('/api/auth/register', { method: 'POST', credentials: 'include', body: fd })
     const json = await res.json()
     if (json.code !== 200) {
       err.value = json.message || 'Register failed'
+      turnstileRef.value?.reset()
     } else {
       ok.value = t('register.ok')
       setTimeout(() => router.push({ path: '/', query: { login: '1' } }), 900)
@@ -68,7 +73,8 @@ async function submit() {
     <div>
       <router-link to="/" class="back-link" style="display:inline-block;margin-bottom:16px">{{ t('back')
         }}</router-link>
-      <div class="auth-card auth-card-wide">
+      <div class="auth-card auth-card-wide" style="position:relative">
+        <router-link to="/" class="close-x" style="position:absolute;top:14px;right:16px;font-size:22px;text-decoration:none;color:var(--muted);">×</router-link>
         <div class="auth-head">
           <div>
             <div class="micro">REGISTER // MUXCRAFT</div>
@@ -118,6 +124,7 @@ async function submit() {
 
         <p class="form-err">{{ err }}</p>
         <p class="form-ok">{{ ok }}</p>
+        <Turnstile ref="turnstileRef" />
         <button class="cta" style="width:100%" :disabled="loading" @click="submit">
           {{ loading ? '…' : t('register.submit') }}
         </button>

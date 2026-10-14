@@ -2,7 +2,8 @@
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from '../i18n/index'
-import { login } from '../api/auth'
+import { login, logout } from '../api/auth'
+import Turnstile from './Turnstile.vue'
 import { useUser } from '../store/user'
 import { toast } from '../composables/ui'
 
@@ -13,6 +14,7 @@ const { t, state } = useI18n()
 const { setSession, state: uState, confirmLogout } = useUser()
 
 async function doLogout() {
+  try { await logout() } catch {}
   await confirmLogout()
   emit('close')
 }
@@ -23,6 +25,7 @@ const showPwd = ref(false)
 const err = ref('')
 const ok = ref('')
 const loading = ref(false)
+const turnstileRef = ref(null)
 
 watch(
   () => props.open,
@@ -35,16 +38,17 @@ watch(
 async function submit() {
   err.value = ''; ok.value = ''
   if (!userId.value.trim() || !password.value) { err.value = t('login.fail'); return }
+  const cfToken = turnstileRef.value?.token || ''
   loading.value = true
   try {
-    const data = await login({ userId: userId.value.trim(), password: password.value })
+    const data = await login({ userId: userId.value.trim(), password: password.value, 'cf-turnstile-response': cfToken })
     setSession(data)
     toast('登录成功，欢迎 ' + data.user.nickname)
     emit('close')
-    setTimeout(() => location.reload(), 500)
   } catch (e) {
     err.value = e.message || t('login.fail')
     toast(err.value, 'error')
+    turnstileRef.value?.reset()
   } finally {
     loading.value = false
   }
@@ -75,6 +79,7 @@ function goRegister() {
           </button>
         </div>
         <p class="form-err">{{ err }}</p>
+        <Turnstile ref="turnstileRef" />
         <button class="cta" style="width:100%" :disabled="loading" @click="submit">
           {{ loading ? '…' : t('login.submit') }}
         </button>

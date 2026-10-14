@@ -106,7 +106,11 @@ public class AdminServiceImpl implements AdminService {
                 throw new BizException(ResultCode.FORBIDDEN, "禁止删除最后一个管理员");
             }
         }
+        String avatarUrl = user.getAvatarUrl();
         userMapper.deleteById(id);
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            fileService.delete(avatarUrl);
+        }
     }
 
     @Override
@@ -123,6 +127,7 @@ public class AdminServiceImpl implements AdminService {
             settings = new SiteSettings();
             settings.setId(1);
         }
+        String oldPhotoUrl = settings.getPhotoUrl();
         settings.setSiteTitle(dto.getSiteTitle());
         settings.setSiteDescription(dto.getSiteDescription());
         settings.setProfileName(dto.getProfileName());
@@ -146,6 +151,9 @@ public class AdminServiceImpl implements AdminService {
             UploadVO vo = fileService.upload(photo, "avatars");
             settings.setPhotoUrl(vo.getUrl());
             siteSettingsMapper.update(settings);
+            if (oldPhotoUrl != null && !oldPhotoUrl.isEmpty()) {
+                fileService.delete(oldPhotoUrl);
+            }
         }
 
         return toSettingsVO(siteSettingsMapper.selectById(1));

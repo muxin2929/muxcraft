@@ -8,13 +8,17 @@ import SiteFooter from './components/SiteFooter.vue'
 import AppToast from './components/AppToast.vue'
 import AppConfirm from './components/AppConfirm.vue'
 import ChatWidget from './components/ChatWidget.vue'
+import SiteGate from './components/SiteGate.vue'
 import { getSite } from './api/content'
+import { tryRestoreSession } from './api/auth'
+import { useUser } from './store/user'
 
 const drawerOpen = ref(false)
 const loginOpen = ref(false)
 const chatRef = ref(null)
 const route = useRoute()
 const router = useRouter()
+const { state: uState, setSession } = useUser()
 
 // 全站动态站点信息（标题/描述等）
 const site = ref({})
@@ -25,6 +29,13 @@ provide('openChatWith', (user) => chatRef.value?.openChatWith(user))
 
 onMounted(async () => {
   document.body.style.overflow = ''
+  // 页面加载时用 cookie 恢复登录态
+  if (!uState.token && uState.user) {
+    try {
+      const data = await tryRestoreSession()
+      if (data) setSession({ token: data.token, user: data.user })
+    } catch { /* 未登录 */ }
+  }
   try {
     site.value = await getSite() || {}
     if (site.value.siteTitle) document.title = site.value.siteTitle
@@ -37,7 +48,13 @@ onMounted(async () => {
 })
 
 // 供内部组件（留言/评论）打开登录弹窗
-provide('openLogin', () => { loginOpen.value = true })
+provide('openLogin', () => {
+  if (route.path === '/register') {
+    router.push({ path: '/', query: { login: '1' } })
+  } else {
+    loginOpen.value = true
+  }
+})
 
 // 401 时自动弹出登录框
 function onAuthRequired() { loginOpen.value = true }
@@ -59,6 +76,7 @@ watch(
 </script>
 
 <template>
+  <SiteGate />
   <SiteTopBar @open-menu="drawerOpen = true" @open-login="loginOpen = true" />
   <router-view v-slot="{ Component }">
     <component :is="Component" />

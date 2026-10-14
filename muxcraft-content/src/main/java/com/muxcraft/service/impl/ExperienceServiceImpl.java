@@ -67,12 +67,16 @@ public class ExperienceServiceImpl implements ExperienceService {
         BeanUtils.copyProperties(dto, experience);
         experience.setId(id);
 
+        String oldCoverUrl = existing.getCoverUrl();
         if (cover != null && !cover.isEmpty()) {
             UploadVO vo = fileService.upload(cover, "covers");
             experience.setCoverUrl(vo.getUrl());
         }
 
         experienceMapper.update(experience);
+        if (cover != null && !cover.isEmpty() && oldCoverUrl != null && !oldCoverUrl.isEmpty()) {
+            fileService.delete(oldCoverUrl);
+        }
         return toVO(experienceMapper.selectById(id));
     }
 
@@ -82,7 +86,11 @@ public class ExperienceServiceImpl implements ExperienceService {
         if (existing == null) {
             throw new BizException(ResultCode.NOT_FOUND, "经历不存在");
         }
+        String coverUrl = existing.getCoverUrl();
         experienceMapper.deleteById(id);
+        if (coverUrl != null && !coverUrl.isEmpty()) {
+            fileService.delete(coverUrl);
+        }
     }
 
     @Override

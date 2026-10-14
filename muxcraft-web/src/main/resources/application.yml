@@ -29,6 +29,17 @@ mybatis:
 jwt:
   secret: MuXCraft-Digital-Workshop-JWT-Secret-Key-2026-Please-Change-In-Production
   expire-seconds: 7200
+  refresh-expire-seconds: 604800
+  cookie:
+    name: refresh_token
+    secure: ${JWT_COOKIE_SECURE:true}
+    same-site: ${JWT_COOKIE_SAME_SITE:Lax}
+    path: /
+
+# Cloudflare Turnstile 人机验证
+turnstile:
+  enabled: ${TURNSTILE_ENABLED:true}
+  secret-key: ${TURNSTILE_SECRET_KEY} # 从 Cloudflare 获取的 Turnstile 密钥
 
 # CORS 跨域配置（生产环境设置为前端 HTTPS 域名，多个用逗号分隔）
 cors:
@@ -37,8 +48,8 @@ cors:
 # 阿里云 OSS 配置（生产环境请替换为实际值）
 aliyun:
   oss:
-    access-key-id: ${OSS_ACCESS_KEY_ID:}
-    access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
+    access-key-id: ${OSS_ACCESS_KEY_ID}
+    access-key-secret: ${OSS_ACCESS_KEY_SECRET}
     endpoint: oss-cn-beijing.aliyuncs.com
     bucket-name: muxcraft
 

@@ -86,6 +86,7 @@ public class ArticleServiceImpl implements ArticleService {
         BeanUtils.copyProperties(dto, article);
         article.setId(id);
 
+        String oldCoverUrl = existing.getCoverUrl();
         if (cover != null && !cover.isEmpty()) {
             UploadVO vo = fileService.upload(cover, "covers");
             article.setCoverUrl(vo.getUrl());
@@ -95,6 +96,9 @@ public class ArticleServiceImpl implements ArticleService {
             article.setStatus(article.getStatus().toUpperCase());
         }
         articleMapper.update(article);
+        if (cover != null && !cover.isEmpty() && oldCoverUrl != null && !oldCoverUrl.isEmpty()) {
+            fileService.delete(oldCoverUrl);
+        }
         return toListVO(articleMapper.selectById(id));
     }
 
@@ -104,7 +108,11 @@ public class ArticleServiceImpl implements ArticleService {
         if (existing == null) {
             throw new BizException(ResultCode.NOT_FOUND, "文章不存在");
         }
+        String coverUrl = existing.getCoverUrl();
         articleMapper.deleteById(id);
+        if (coverUrl != null && !coverUrl.isEmpty()) {
+            fileService.delete(coverUrl);
+        }
     }
 
     @Override

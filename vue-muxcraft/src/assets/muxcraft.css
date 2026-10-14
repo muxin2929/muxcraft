@@ -209,6 +209,69 @@
   padding: 0 28px
 }
 
+/* ---------- 列表页内容区（博客 / 项目 / 技术栈）----------
+   高度上限 = 首屏去掉版头后剩下的空间；内容超出就在该区域右侧出现细滚动条，
+   页面本身不再被列表拉长。内容不足时保持原高度，不会多出空白。 */
+.blog,
+.projects,
+.skills {
+  max-height: calc(100vh - 380px);
+  max-height: calc(100dvh - 380px);
+  min-height: 260px;
+  overflow-y: auto;
+  padding: 0 10px 6px 0;
+  margin-right: -10px;
+  scrollbar-gutter: stable;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent
+}
+
+.blog::-webkit-scrollbar,
+.projects::-webkit-scrollbar,
+.skills::-webkit-scrollbar {
+  width: 8px
+}
+
+.blog::-webkit-scrollbar-thumb,
+.projects::-webkit-scrollbar-thumb,
+.skills::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 4px
+}
+
+.blog::-webkit-scrollbar-track,
+.projects::-webkit-scrollbar-track,
+.skills::-webkit-scrollbar-track {
+  background: transparent
+}
+
+@media (max-width: 768px) {
+  .blog,
+  .projects,
+  .skills {
+    max-height: calc(100vh - 350px);
+    max-height: calc(100dvh - 350px)
+  }
+}
+
+/* ---------- 项目模块：两行以内不出现滚动条 ----------
+   --proj-2rows 由 ProjectsPage 实测「前两行卡片」的真实高度写入。
+   上限取「首屏可用高度」与「两行高度」中的较大者：
+   内容刚好两行（含不足两行）时不出现滚动条，超过两行才出现。 */
+.projects {
+  max-height: max(calc(100vh - 380px), var(--proj-2rows, 0px));
+  max-height: max(calc(100dvh - 380px), var(--proj-2rows, 0px));
+}
+
+@media (max-width: 768px) {
+  .projects {
+    max-height: max(calc(100vh - 350px), var(--proj-2rows, 0px));
+    max-height: max(calc(100dvh - 350px), var(--proj-2rows, 0px));
+  }
+}
+
 /* ---------- Hero ---------- */
 .hero {
   min-height: 100vh;
@@ -452,12 +515,13 @@ section {
 }
 
 /* Section 1 — centered, fills viewport after ENTER */
+/* 主页区域节奏：Hero / About 介绍 / 精选项目 / Explore 各占一屏（各自 100vh 且内容垂直居中），
+   所以相邻区域不会同屏出现，滚动一屏换一块。间距由每块内部的留白承担。 */
 #about.about {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 120px 0 80px
+  padding: 0
 }
 
 .panel {
@@ -478,35 +542,6 @@ section {
   z-index: 1
 }
 
-.stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px
-}
-
-.stat {
-  padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: 17px;
-  background: rgba(255, 255, 255, .5);
-  transition: .25s
-}
-
-.stat:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow)
-}
-
-.stat b {
-  font-size: 30px
-}
-
-.stat small {
-  display: block;
-  color: var(--muted);
-  margin-top: 6px
-}
-
 /* ---------- Explore grid ---------- */
 .explore {
   display: grid;
@@ -516,46 +551,7 @@ section {
   z-index: 1
 }
 
-.explore .ex-card {
-  min-height: 170px;
-  padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, .5);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: .25s;
-  cursor: pointer
-}
-
-.explore .ex-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow);
-  border-color: #b7dce8
-}
-
-.explore .ex-card:hover .arrow {
-  transform: translate(3px, -3px);
-  color: var(--blue2)
-}
-
-.num {
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: .08em
-}
-
-.arrow {
-  align-self: end;
-  font-size: 26px;
-  transition: .25s
-}
-
-.ex-card strong {
-  font-size: 17px;
-  margin: 8px 0
-}
+/* 卡片本体样式见 ExploreSection.vue 的 scoped 样式 */
 
 /* ---------- Footer ---------- */
 .site-footer {
@@ -1313,7 +1309,7 @@ html, body {
   .title { font-size: 30px; }
   .lead { font-size: 13px; line-height: 1.7; }
   section { padding: 60px 0; }
-  #about.about { padding: 100px 0 60px; }
+  #about.about { padding: 0; }
 
   /* 隐藏重装饰，降卡顿 */
   .orb, .orb.two, .grid-fx, .blob { display: none; }
@@ -1340,9 +1336,7 @@ html, body {
   /* 卡片 */
   .card, .card.big, .card.tall { min-height: 200px; padding: 18px; }
   .card h3 { font-size: 20px; }
-  .ex-card { min-height: 130px; padding: 16px; }
   .skill { padding: 16px; }
-  .stat b { font-size: 24px; }
 
   /* 评论/留言 */
   .comment-row { gap: 10px; }

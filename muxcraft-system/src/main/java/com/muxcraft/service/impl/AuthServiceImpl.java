@@ -76,9 +76,7 @@ public class AuthServiceImpl implements AuthService {
             user.setAvatarUrl(vo.getUrl());
         }
 
-        String token = jwtUtil.generateToken(user.getId(), user.getUserId(), user.getNickname(),
-                user.getAvatarUrl(), user.getRole());
-        return new LoginVO(token, jwtUtil.getExpireSeconds(), toUserVO(user));
+        return buildLoginVO(user);
     }
 
     @Override
@@ -91,9 +89,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BizException(ResultCode.FORBIDDEN, "账号已禁用");
         }
         fillAdminAvatar(user);
-        String token = jwtUtil.generateToken(user.getId(), user.getUserId(), user.getNickname(),
-                user.getAvatarUrl(), user.getRole());
-        return new LoginVO(token, jwtUtil.getExpireSeconds(), toUserVO(user));
+        return buildLoginVO(user);
     }
 
     @Override
@@ -104,6 +100,36 @@ public class AuthServiceImpl implements AuthService {
         }
         fillAdminAvatar(user);
         return toUserVO(user);
+    }
+
+    @Override
+    public LoginVO refresh(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new BizException(ResultCode.UNAUTHORIZED, "登录状态已过期，请重新登录");
+        }
+        Long userId;
+        try {
+            userId = jwtUtil.parseRefreshToken(refreshToken);
+        } catch (Exception e) {
+            throw new BizException(ResultCode.UNAUTHORIZED, "登录状态已过期，请重新登录");
+        }
+        User user = userMapper.selectById(userId);
+        if (user == null || user.getStatus() == 0) {
+            throw new BizException(ResultCode.UNAUTHORIZED, "登录状态已过期，请重新登录");
+        }
+        fillAdminAvatar(user);
+        return buildLoginVO(user);
+    }
+
+    @Override
+    public void logout() {
+    }
+
+    private LoginVO buildLoginVO(User user) {
+        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getUserId(), user.getNickname(),
+                user.getAvatarUrl(), user.getRole());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getId());
+        return new LoginVO(accessToken, jwtUtil.getExpireSeconds(), toUserVO(user), refreshToken);
     }
 
     private void fillAdminAvatar(User user) {

@@ -89,6 +89,7 @@ public class SiteServiceImpl implements SiteService {
             settings = new SiteSettings();
             settings.setId(1);
         }
+        String oldPhotoUrl = settings.getPhotoUrl();
         settings.setProfileName(dto.getName());
         settings.setProfileTitle(dto.getTitle());
         settings.setShortIntro(dto.getShortIntro());
@@ -107,6 +108,9 @@ public class SiteServiceImpl implements SiteService {
             UploadVO vo = fileService.upload(photo, "avatars");
             settings.setPhotoUrl(vo.getUrl());
             siteSettingsMapper.update(settings);
+            if (oldPhotoUrl != null && !oldPhotoUrl.isEmpty()) {
+                fileService.delete(oldPhotoUrl);
+            }
         }
 
         return getProfile();

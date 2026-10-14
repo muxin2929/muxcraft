@@ -4,13 +4,13 @@ import { useI18n } from '../i18n/index'
 import { getSkills } from '../api/content'
 
 const { t } = useI18n()
-const groups = ref([])
+const skills = ref([])
 const loading = ref(true)
 const err = ref('')
 
 onMounted(async () => {
   try {
-    groups.value = await getSkills()
+    skills.value = await getSkills()
   } catch (e) {
     err.value = e.message
   } finally {
@@ -18,7 +18,6 @@ onMounted(async () => {
   }
 })
 function stars(n) { return '★'.repeat(n || 0) + '☆'.repeat(5 - (n || 0)) }
-const flat = () => groups.value.flatMap(g => g.skills || []).sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999))
 </script>
 
 <style scoped>
@@ -38,7 +37,7 @@ const flat = () => groups.value.flatMap(g => g.skills || []).sort((a, b) => (a.s
     <p v-if="loading" class="muted" style="margin-top:20px">Loading…</p>
     <p v-else-if="err" class="muted" style="margin-top:20px">{{ err }}</p>
     <div v-else class="skills" v-reveal style="margin-top:20px">
-      <div class="skill" v-for="s in flat()" :key="s.id">
+      <div class="skill" v-for="s in skills" :key="s.id">
         <div class="skill-icon" v-if="!s.iconUrl">{{ s.name?.[0]?.toUpperCase() }}</div>
         <div class="skill-icon has-img" v-else><img :src="s.iconUrl" :alt="s.name" /></div>
         <b>{{ s.name }}</b>

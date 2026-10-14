@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from '../i18n/index'
 import { getProjects } from '../api/content'
 
@@ -7,6 +7,34 @@ const { t } = useI18n()
 const records = ref([])
 const loading = ref(true)
 const err = ref('')
+
+const gridRef = ref(null)
+const twoRows = ref(0)        // 前两行卡片的实测高度，写入 --proj-2rows
+let rowObserver = null
+let onResize = null
+
+// 量出「前两行」卡片的真实高度：内容在两行以内时不该出现滚动条，超过两行才需要
+function measureTwoRows() {
+  const grid = gridRef.value
+  if (!grid) return
+  const cards = Array.from(grid.children)
+  if (!cards.length) return
+  const rows = []
+  for (const c of cards) {
+    const top = c.offsetTop
+    const bottom = top + c.offsetHeight
+    const last = rows[rows.length - 1]
+    if (!last || Math.abs(top - last.top) > 2) rows.push({ top, bottom })
+    else if (bottom > last.bottom) last.bottom = bottom
+  }
+  const baseTop = rows[0].top
+  const lastBottom = rows[rows.length - 1].bottom
+  const twoRowBox = (rows.length >= 2 ? rows[1].bottom : rows[0].bottom) - baseTop
+  // 容器尾部还有 padding / 最后一张卡片的外边距，也要算进去，否则刚好两行时仍会多出一条细滚动条
+  const trailing = Math.min(32, Math.max(0, grid.scrollHeight - (lastBottom - baseTop)))
+  const next = Math.ceil(twoRowBox + trailing)
+  if (next !== twoRows.value) twoRows.value = next
+}
 
 onMounted(async () => {
   try {
@@ -17,6 +45,19 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+  await nextTick()
+  measureTwoRows()
+  onResize = () => measureTwoRows()
+  window.addEventListener('resize', onResize)
+  if (typeof ResizeObserver !== 'undefined') {
+    rowObserver = new ResizeObserver(() => measureTwoRows())
+    if (gridRef.value) rowObserver.observe(gridRef.value)
+  }
+})
+
+onUnmounted(() => {
+  if (onResize) window.removeEventListener('resize', onResize)
+  if (rowObserver) { rowObserver.disconnect(); rowObserver = null }
 })
 
 // 面包格 bento 排版：每行 12 列
@@ -50,7 +91,13 @@ function cls(i) {
     <p v-else-if="err" class="muted" style="margin-top:20px">{{ err }}</p>
     <div v-else-if="records.length===0" class="panel" style="margin-top:20px"><p class="muted">—</p></div>
 
-    <div class="projects" v-else v-reveal style="margin-top:20px">
+    <div
+      class="projects"
+      v-else
+      ref="gridRef"
+      v-reveal
+      :style="{ marginTop: '20px', '--proj-2rows': (twoRows ? twoRows + 'px' : '0px') }"
+    >
       <router-link
         v-for="(p,i) in records" :key="p.id"
         class="card"

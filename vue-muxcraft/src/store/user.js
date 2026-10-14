@@ -2,8 +2,8 @@ import { reactive, watch } from 'vue'
 import { confirmDialog, toast } from '../composables/ui'
 
 // 当前登录用户的全局响应式状态。
+// access token 存在内存（由 request.js 管理），这里只存用户信息用于 UI 展示。
 const STORAGE_KEY = 'mux-user'
-const TOKEN_KEY = 'mux-token'
 
 const state = reactive({
   user: null,
@@ -13,7 +13,6 @@ const state = reactive({
 try {
   const raw = localStorage.getItem(STORAGE_KEY)
   if (raw) state.user = JSON.parse(raw)
-  state.token = localStorage.getItem(TOKEN_KEY) || ''
 } catch (e) { /* ignore */ }
 
 watch(
@@ -23,14 +22,6 @@ watch(
     else localStorage.removeItem(STORAGE_KEY)
   },
   { deep: true }
-)
-
-watch(
-  () => state.token,
-  (tk) => {
-    if (tk) localStorage.setItem(TOKEN_KEY, tk)
-    else localStorage.removeItem(TOKEN_KEY)
-  }
 )
 
 export function setSession({ token, user }) {

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useI18n } from '../i18n/index'
 import { getAchievements } from '../api/content'
 
@@ -7,6 +7,9 @@ const { t } = useI18n()
 const records = ref([])
 const loading = ref(true)
 const err = ref('')
+const scrollRef = ref(null)
+let isDown = false, startX = 0, scrollLeft = 0
+let wheelBound = false
 
 // 卡片配色（按索引轮换）：背景色 + 装饰圆点/纹理
 const themes = [
@@ -25,6 +28,52 @@ onMounted(async () => {
   } catch (e) { err.value = e.message }
   finally { loading.value = false }
 })
+
+// 卡片渲染完再绑定 wheel（与经历页同一套做法；wheel 必须非 passive 才能拦掉页面纵向滚动）
+watch(loading, async (v) => {
+  if (v === false && !wheelBound) {
+    await nextTick()
+    if (scrollRef.value) {
+      scrollRef.value.addEventListener('wheel', onWheel, { passive: false })
+      wheelBound = true
+    }
+  }
+})
+
+onBeforeUnmount(() => {
+  if (scrollRef.value) {
+    scrollRef.value.removeEventListener('wheel', onWheel)
+  }
+})
+
+// 鼠标滚轮在卡片区域时转为水平滚动，并阻止页面上下滚动
+function onWheel(e) {
+  const el = scrollRef.value
+  if (!el) return
+  const d = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientWidth : 1)
+  if (!d) return           // 纯横向手势（触控板）交给原生滚动，不吞掉
+  e.preventDefault()
+  el.scrollLeft += d
+}
+
+// 按住拖动（PC 上另一种横向浏览方式，与经历页一致）
+function onMouseDown(e) {
+  const el = scrollRef.value
+  if (!el) return
+  isDown = true
+  el.classList.add('dragging')
+  startX = e.pageX - el.offsetLeft
+  scrollLeft = el.scrollLeft
+}
+function onMouseLeave() { isDown = false; scrollRef.value?.classList.remove('dragging') }
+function onMouseUp() { isDown = false; scrollRef.value?.classList.remove('dragging') }
+function onMouseMove(e) {
+  const el = scrollRef.value
+  if (!el || !isDown) return
+  e.preventDefault()
+  const x = e.pageX - el.offsetLeft
+  el.scrollLeft = scrollLeft - (x - startX) * 1.5
+}
 </script>
 
 <template>
@@ -40,7 +89,8 @@ onMounted(async () => {
 
     <div v-else class="rail" v-reveal>
       <div class="line"></div>
-      <div class="h-scroll">
+      <div ref="scrollRef" class="h-scroll"
+        @mousedown="onMouseDown" @mouseleave="onMouseLeave" @mouseup="onMouseUp" @mousemove="onMouseMove">
         <div class="item" v-for="(a, i) in records" :key="a.id">
           <div class="dot"></div>
           <div class="year">{{ a.year }}</div>
@@ -69,14 +119,17 @@ onMounted(async () => {
   display: flex;
   gap: 20px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
   padding: 0 2px 10px;
+  cursor: grab;
+  user-select: none;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
 }
+.h-scroll.dragging { cursor: grabbing; }
 .h-scroll::-webkit-scrollbar { height: 8px; }
 .h-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
 .item {
   flex: 0 0 260px;
-  scroll-snap-align: start;
   position: relative;
   padding-top: 40px;
 }
