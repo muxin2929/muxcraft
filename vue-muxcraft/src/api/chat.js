@@ -7,7 +7,7 @@ export const getConversations = () => request('/chat/conversations', { auth: tru
 // ===== 某会话消息列表 =====
 export const getMessages = (userId, params = {}) => {
   const q = new URLSearchParams(params).toString()
-  return request(`/chat/messages/${userId}?${q}`, { auth: true })
+  return request(`/chat/messages/${userId}${q ? '?' + q : ''}`, { auth: true })
 }
 
 // ===== 发送私信（REST 兜底；实时走 WebSocket） =====

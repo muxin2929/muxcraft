@@ -43,14 +43,14 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public PageResult<CommentVO> page(Long projectId, int page, int size, Long currentUserId) {
-        int offset = (page - 1) * size;
-        List<Comment> list = commentMapper.selectPageByProjectId(projectId, offset, size, currentUserId);
+        // 项目详情评论取消分页：一次返回全部评论
+        List<Comment> list = commentMapper.selectPageByProjectId(projectId, 0, 100000, currentUserId);
         long total = commentMapper.countByProjectId(projectId, currentUserId);
         List<CommentVO> records = new ArrayList<>();
         for (Comment comment : list) {
             records.add(toVO(comment));
         }
-        return new PageResult<>(records, page, size, total);
+        return new PageResult<>(records, 1, records.size(), total);
     }
 
     @Override

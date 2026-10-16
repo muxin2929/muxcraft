@@ -149,7 +149,7 @@ public class AdminController {
     @GetMapping("/projects")
     public Result<PageResult<Project>> projects(@RequestParam(defaultValue = "1") int page,
                                                 @RequestParam(defaultValue = "10") int size) {
-        size = Math.min(size, 50);
+        size = 100000; // 管理端项目列表无翻页器，一次返回全部
         return Result.success(projectService.adminPage(page, size));
     }
 
@@ -184,7 +184,7 @@ public class AdminController {
     @GetMapping("/experiences")
     public Result<PageResult<Experience>> experiences(@RequestParam(defaultValue = "1") int page,
                                                       @RequestParam(defaultValue = "10") int size) {
-        size = Math.min(size, 50);
+        size = 100000; // 管理端经历列表无翻页器，一次返回全部
         return Result.success(experienceService.adminPage(page, size));
     }
 
@@ -248,7 +248,7 @@ public class AdminController {
     @GetMapping("/articles")
     public Result<PageResult<Article>> articles(@RequestParam(defaultValue = "1") int page,
                                                 @RequestParam(defaultValue = "10") int size) {
-        size = Math.min(size, 50);
+        size = 100000; // 管理端文章列表无翻页器，一次返回全部
         return Result.success(articleService.adminPage(page, size));
     }
 
@@ -281,7 +281,7 @@ public class AdminController {
     @GetMapping("/comments")
     public Result<PageResult<com.muxcraft.vo.CommentAdminVO>> comments(@RequestParam(defaultValue = "1") int page,
                                                                     @RequestParam(defaultValue = "10") int size) {
-        size = Math.min(size, 50);
+        size = 100000; // 管理端评论列表无翻页器，一次返回全部
         return Result.success(commentService.adminPage(page, size));
     }
 
@@ -300,7 +300,7 @@ public class AdminController {
     @GetMapping("/guestbook")
     public Result<PageResult<com.muxcraft.vo.GuestbookAdminVO>> guestbook(@RequestParam(defaultValue = "1") int page,
                                                                        @RequestParam(defaultValue = "10") int size) {
-        size = Math.min(size, 50);
+        size = 100000; // 管理端留言列表无翻页器，一次返回全部
         return Result.success(guestbookService.adminPage(page, size));
     }
 
@@ -319,7 +319,7 @@ public class AdminController {
     @GetMapping("/suggestions")
     public Result<PageResult<com.muxcraft.vo.SuggestionAdminVO>> suggestions(@RequestParam(defaultValue = "1") int page,
                                                                              @RequestParam(defaultValue = "10") int size) {
-        size = Math.min(size, 50);
+        size = 100000; // 管理端建议列表无翻页器，一次返回全部
         return Result.success(suggestionService.adminPage(page, size));
     }
 

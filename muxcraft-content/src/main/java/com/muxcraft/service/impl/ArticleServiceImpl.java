@@ -36,11 +36,11 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public PageResult<ArticleVO> page(int page, int size, String tag) {
-        int offset = (page - 1) * size;
-        List<Article> list = articleMapper.selectPagePublished(offset, size, tag);
+        // 公共列表取消分页：一次返回全部已发布文章
+        List<Article> list = articleMapper.selectPagePublished(0, 100000, tag);
         long total = articleMapper.countPublished(tag);
         List<ArticleVO> records = list.stream().map(this::toListVO).toList();
-        return new PageResult<>(records, page, size, total);
+        return new PageResult<>(records, 1, records.size(), total);
     }
 
     @Override

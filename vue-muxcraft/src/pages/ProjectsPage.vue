@@ -13,7 +13,7 @@ const twoRows = ref(0)        // 前两行卡片的实测高度，写入 --proj-
 let rowObserver = null
 let onResize = null
 
-// 量出「前两行」卡片的真实高度：内容在两行以内时不该出现滚动条，超过两行才需要
+// 量出容器应有的高度：PC 端取前两行卡片高度，手机端只取一行（一行后才出滚动条）
 function measureTwoRows() {
   const grid = gridRef.value
   if (!grid) return
@@ -29,16 +29,19 @@ function measureTwoRows() {
   }
   const baseTop = rows[0].top
   const lastBottom = rows[rows.length - 1].bottom
-  const twoRowBox = (rows.length >= 2 ? rows[1].bottom : rows[0].bottom) - baseTop
-  // 容器尾部还有 padding / 最后一张卡片的外边距，也要算进去，否则刚好两行时仍会多出一条细滚动条
+  const onMobile = window.matchMedia('(max-width: 768px)').matches
+  const rowBox = onMobile
+    ? (rows[0].bottom - baseTop)
+    : (rows.length >= 2 ? rows[1].bottom : rows[0].bottom) - baseTop
+  // 容器尾部还有 padding / 最后一张卡片的外边距，也要算进去，否则刚好满行时仍会多出一条细滚动条
   const trailing = Math.min(32, Math.max(0, grid.scrollHeight - (lastBottom - baseTop)))
-  const next = Math.ceil(twoRowBox + trailing)
+  const next = Math.ceil(rowBox + trailing)
   if (next !== twoRows.value) twoRows.value = next
 }
 
 onMounted(async () => {
   try {
-    const data = await getProjects({ page: 1, size: 9 })
+    const data = await getProjects({ page: 1, size: 50 })
     records.value = data.records || []
   } catch (e) {
     err.value = e.message

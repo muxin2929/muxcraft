@@ -24,7 +24,6 @@
             SELECT message_id FROM chat_message_deleted WHERE user_id = #{currentUserId}
         )
         ORDER BY created_at ASC
-        LIMIT #{offset}, #{size}
     </select>
 
     <select id="countByPair" resultType="long">

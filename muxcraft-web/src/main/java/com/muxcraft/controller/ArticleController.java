@@ -30,7 +30,6 @@ public class ArticleController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String tag) {
-        size = Math.min(size, 50);
         return Result.success(articleService.page(page, size, tag));
     }
 

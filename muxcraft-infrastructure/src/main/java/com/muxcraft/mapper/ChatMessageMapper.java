@@ -11,9 +11,7 @@ public interface ChatMessageMapper {
 
     List<ChatMessage> selectByPair(@Param("userId1") Long userId1,
                                    @Param("userId2") Long userId2,
-                                   @Param("currentUserId") Long currentUserId,
-                                   @Param("offset") int offset,
-                                   @Param("size") int size);
+                                   @Param("currentUserId") Long currentUserId);
 
     long countByPair(@Param("userId1") Long userId1, @Param("userId2") Long userId2,
                      @Param("currentUserId") Long currentUserId);

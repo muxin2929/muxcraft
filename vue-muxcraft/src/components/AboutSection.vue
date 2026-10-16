@@ -24,14 +24,15 @@ onMounted(async () => {
 
   try {
     const data = await getProjects({ page: 1, size: 3 })
-    works.value = data.records || []
+    // 后端公共列表已改为全量返回，首页精选这里自己只取前 3 张
+    works.value = (data.records || []).slice(0, 3)
   } catch (e) {
     worksErr.value = e.message
   }
 
   try {
     const d = await getExperiences({ page: 1, size: 3 })
-    journey.value = d.records || []
+    journey.value = (d.records || []).slice(0, 3)
   } catch (e) { /* 时间轴取不到就不渲染，不打扰访客 */ }
 })
 

@@ -31,7 +31,6 @@ public class ProjectController {
             @RequestParam(defaultValue = "9") int size,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long skillId) {
-        size = Math.min(size, 50);
         return Result.success(projectService.page(page, size, keyword, skillId));
     }
 

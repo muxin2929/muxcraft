@@ -10,7 +10,7 @@ public interface ChatService {
 
     List<ConversationVO> conversations(Long currentUserId);
 
-    PageResult<ChatMessageVO> messages(Long currentUserId, Long otherUserId, int page, int size);
+    PageResult<ChatMessageVO> messages(Long currentUserId, Long otherUserId);
 
     ChatMessageVO sendMessage(Long fromUserId, Long toUserId, String content);
 

@@ -222,7 +222,7 @@
   padding: 0 10px 6px 0;
   margin-right: -10px;
   scrollbar-gutter: stable;
-  overscroll-behavior-y: contain;
+  overscroll-behavior-y: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent

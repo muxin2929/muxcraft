@@ -11,7 +11,7 @@ const err = ref('')
 
 onMounted(async () => {
   try {
-    const data = await getArticles({ page: 1, size: 20 })
+    const data = await getArticles({ page: 1, size: 50 })
     records.value = data.records || []
   } catch (e) { err.value = e.message }
   finally { loading.value = false }

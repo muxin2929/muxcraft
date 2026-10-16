@@ -53,16 +53,14 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public PageResult<ChatMessageVO> messages(Long currentUserId, Long otherUserId, int page, int size) {
+    public PageResult<ChatMessageVO> messages(Long currentUserId, Long otherUserId) {
         User other = userMapper.selectById(otherUserId);
         if (other == null) {
             throw new BizException(ResultCode.NOT_FOUND, "用户不存在");
         }
-        int offset = (page - 1) * size;
-        List<ChatMessage> list = chatMessageMapper.selectByPair(currentUserId, otherUserId, currentUserId, offset, size);
-        long total = chatMessageMapper.countByPair(currentUserId, otherUserId, currentUserId);
+        List<ChatMessage> list = chatMessageMapper.selectByPair(currentUserId, otherUserId, currentUserId);
         List<ChatMessageVO> records = list.stream().map(this::toVO).toList();
-        return new PageResult<>(records, page, size, total);
+        return new PageResult<>(records, 1, records.size(), records.size());
     }
 
     @Override

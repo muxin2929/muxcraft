@@ -39,14 +39,14 @@ public class GuestbookServiceImpl implements GuestbookService {
 
     @Override
     public PageResult<GuestbookVO> page(int page, int size, Long currentUserId) {
-        int offset = (page - 1) * size;
-        List<Guestbook> list = guestbookMapper.selectPage(offset, size, currentUserId);
+        // 公共留言板取消分页：一次返回全部留言
+        List<Guestbook> list = guestbookMapper.selectPage(0, 100000, currentUserId);
         long total = guestbookMapper.countAll(currentUserId);
         List<GuestbookVO> records = new ArrayList<>();
         for (Guestbook g : list) {
             records.add(toVO(g));
         }
-        return new PageResult<>(records, page, size, total);
+        return new PageResult<>(records, 1, records.size(), total);
     }
 
     @Override

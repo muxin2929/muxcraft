@@ -48,11 +48,11 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public PageResult<ProjectVO> page(int page, int size, String keyword, Long skillId) {
-        int offset = (page - 1) * size;
-        List<Project> list = projectMapper.selectPage(offset, size, keyword, skillId);
+        // 公共列表取消分页：一次返回全部启用项目，前端在内部滚动面板里展示
+        List<Project> list = projectMapper.selectPage(0, 100000, keyword, skillId);
         long total = projectMapper.countPage(keyword, skillId);
         List<ProjectVO> records = list.stream().map(this::toListVO).toList();
-        return new PageResult<>(records, page, size, total);
+        return new PageResult<>(records, 1, records.size(), total);
     }
 
     @Override

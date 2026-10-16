@@ -32,11 +32,11 @@ public class ExperienceServiceImpl implements ExperienceService {
 
     @Override
     public PageResult<ExperienceVO> page(int page, int size) {
-        int offset = (page - 1) * size;
-        List<Experience> list = experienceMapper.selectPage(offset, size);
+        // 公共列表取消分页：一次返回全部经历
+        List<Experience> list = experienceMapper.selectPage(0, 100000);
         long total = experienceMapper.countAll();
         List<ExperienceVO> records = list.stream().map(this::toVO).toList();
-        return new PageResult<>(records, page, size, total);
+        return new PageResult<>(records, 1, records.size(), total);
     }
 
     @Override

@@ -72,7 +72,7 @@ function onWsMessage(msg) {
   if (toId && myId && toId !== myId) return
   if (msg.type && msg.type !== 'message') return
   if (fromId === activeUserId.value && open.value) {
-    getMessages(activeUserId.value, { page: 1, size: 50 }).then(data => {
+    getMessages(activeUserId.value).then(data => {
       messages.value = (data.records || []).map(m => ({ ...m, own: Number(m.fromUserId) === myId }))
       // 聊天窗口刷新记录后更新在线时间
       markRead(activeUserId.value).catch(() => {})
@@ -121,7 +121,7 @@ async function openConversation(conv) {
     unreadTotal.value = Object.values(nm).reduce((a, b) => a + b, 0)
   }
   try {
-    const data = await getMessages(conv.userId, { page: 1, size: 50 })
+    const data = await getMessages(conv.userId)
     messages.value = (data.records || []).map(m => ({ ...m, own: m.fromUserId === uState.user.id }))
     // 聊天记录刷新成功后再通知后端标记已读 / 更新在线时间
     markRead(conv.userId).catch(() => {})
@@ -155,7 +155,7 @@ async function sendMsg() {
     draft.value = ''
     if (inputRef.value) inputRef.value.style.height = 'auto'
     // 拉取最新消息
-    const data = await getMessages(activeUserId.value, { page: 1, size: 50 })
+    const data = await getMessages(activeUserId.value)
     messages.value = (data.records || []).map(m => ({ ...m, own: Number(m.fromUserId) === Number(uState.user.id) }))
     // 刷新后更新在线时间
     markRead(activeUserId.value).catch(() => {})
@@ -201,7 +201,7 @@ function openChatWith(item) {
     unreadTotal.value = Object.values(nm).reduce((a, b) => a + b, 0)
   }
   loadConversations()
-  getMessages(uid, { page: 1, size: 50 }).then(data => {
+  getMessages(uid).then(data => {
     messages.value = (data.records || []).map(m => ({ ...m, own: m.fromUserId === uState.user.id }))
     // 聊天记录刷新成功后再标记已读 / 更新在线时间
     markRead(uid).catch(() => {})

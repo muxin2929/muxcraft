@@ -27,7 +27,6 @@ public class ExperienceController {
     public Result<PageResult<ExperienceVO>> page(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        size = Math.min(size, 50);
         return Result.success(experienceService.page(page, size));
     }
 }

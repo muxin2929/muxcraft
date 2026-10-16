@@ -34,7 +34,6 @@ public class CommentController {
             @PathVariable Long projectId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        size = Math.min(size, 50);
         LoginUser loginUser = AuthInterceptor.currentUser();
         Long currentUserId = loginUser != null ? loginUser.getId() : null;
         return Result.success(commentService.page(projectId, page, size, currentUserId));

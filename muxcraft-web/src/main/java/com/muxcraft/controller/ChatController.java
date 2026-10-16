@@ -55,13 +55,9 @@ public class ChatController {
     }
 
     @GetMapping("/messages/{userId}")
-    public Result<PageResult<ChatMessageVO>> messages(
-            @PathVariable Long userId,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "50") int size) {
-        size = Math.min(size, 200);
+    public Result<PageResult<ChatMessageVO>> messages(@PathVariable Long userId) {
         LoginUser loginUser = AuthInterceptor.currentUser();
-        return Result.success(chatService.messages(loginUser.getId(), userId, page, size));
+        return Result.success(chatService.messages(loginUser.getId(), userId));
     }
 
     @PostMapping("/messages")
