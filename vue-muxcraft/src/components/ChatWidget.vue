@@ -149,19 +149,36 @@ async function sendMsg() {
   const text = draft.value.trim()
   if (!text || !activeUserId.value || sending) return
   sending = true
+  const el = inputRef.value
+  // ① 用户点发送的这一下（手势内、发网络请求之前）立刻同步清空输入框并复位高度，
+  //    让输入法马上看到空输入、自然清掉候选词——和 QQ/微信点发送即清空一致。
+  //    此时仍在用户手势上下文里，最稳；不做 blur/focus，避免 iOS 键盘闪一下。
+  draft.value = ''
+  if (el) {
+    el.value = ''
+    el.style.height = 'auto'
+  }
   try {
-    // 先发送成功再显示，失败不渲染假消息、不清空输入框
+    // ② 乐观上屏自己的消息
+    messages.value.push({
+      id: Date.now(),
+      content: text,
+      own: true,
+      fromUserId: uState.user.id,
+      createdAt: new Date().toISOString()
+    })
+    // ③ 后台发送，不阻塞输入框
     await sendMessage(activeUserId.value, text)
-    draft.value = ''
-    if (inputRef.value) inputRef.value.style.height = 'auto'
-    // 拉取最新消息
-    const data = await getMessages(activeUserId.value)
-    messages.value = (data.records || []).map(m => ({ ...m, own: Number(m.fromUserId) === Number(uState.user.id) }))
-    // 刷新后更新在线时间
-    markRead(activeUserId.value).catch(() => {})
-    // 保持输入框焦点，避免手机端输入法关闭
-    inputRef.value?.focus()
+    // 后台静默刷新记录（替换临时 id、拉对端回执）
+    getMessages(activeUserId.value).then(data => {
+      messages.value = (data.records || []).map(m => ({ ...m, own: Number(m.fromUserId) === Number(uState.user.id) }))
+      markRead(activeUserId.value).catch(() => {})
+      scrollBottom()
+    }).catch(() => {})
   } catch (e) {
+    // 发送失败：把文字还给用户，不丢消息，并把焦点拉回输入框
+    draft.value = text
+    if (el) el.focus({ preventScroll: true })
     toast(e.message || t('chat.sendFail'), 'error')
   }
   sending = false
@@ -375,7 +392,7 @@ defineExpose({ openChatWith })
       <!-- 输入区 -->
       <div v-if="activeUser && uState.user" class="cp-input">
         <textarea ref="inputRef" v-model="draft" :placeholder="t('chat.inputPh')" rows="1" @keydown="onInputKeydown" @input="autoGrow"></textarea>
-        <button class="cta" @click="sendMsg">{{ t('chat.send') }}</button>
+        <button class="cta" type="button" @mousedown.prevent @click="sendMsg">{{ t('chat.send') }}</button>
       </div>
       <div v-else-if="activeUser" class="cp-input">
         <button class="outline" @click="$emit('need-login')">{{ t('chat.loginFirst') }}</button>

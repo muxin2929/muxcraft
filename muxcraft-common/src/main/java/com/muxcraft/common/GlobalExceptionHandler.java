@@ -40,14 +40,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Result<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         FieldError fieldError = e.getBindingResult().getFieldError();
-        String message = fieldError != null ? fieldError.getDefaultMessage() : "参数校验失败";
+        String message = fieldError != null ? fieldError.getDefaultMessage() : ErrorMessageConstants.VALIDATION_FAILED;
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.fail(ResultCode.BAD_REQUEST, message));
     }
 
     @ExceptionHandler(BindException.class)
     public ResponseEntity<Result<Void>> handleBindException(BindException e) {
         FieldError fieldError = e.getBindingResult().getFieldError();
-        String message = fieldError != null ? fieldError.getDefaultMessage() : "参数校验失败";
+        String message = fieldError != null ? fieldError.getDefaultMessage() : ErrorMessageConstants.VALIDATION_FAILED;
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.fail(ResultCode.BAD_REQUEST, message));
     }
 
@@ -58,27 +58,27 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public Result<Void> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
-        return Result.fail(ResultCode.PAYLOAD_TOO_LARGE, "文件过大，单个文件不能超过2MB");
+        return Result.fail(ResultCode.PAYLOAD_TOO_LARGE, ErrorMessageConstants.UPLOAD_FILE_TOO_LARGE);
     }
 
     @ExceptionHandler(MultipartException.class)
     public Result<Void> handleMultipartException(MultipartException e) {
         log.warn("文件上传解析异常: {}", e.getMessage());
-        return Result.fail(ResultCode.BAD_REQUEST, "文件上传失败，请检查文件格式和大小");
+        return Result.fail(ResultCode.BAD_REQUEST, ErrorMessageConstants.UPLOAD_FILE_INVALID);
     }
 
     @ExceptionHandler(DuplicateKeyException.class)
     public Result<Void> handleDuplicateKeyException(DuplicateKeyException e) {
         log.warn("数据唯一约束冲突: {}", e.getMessage());
-        return Result.fail(ResultCode.CONFLICT, "数据已存在，请勿重复添加");
+        return Result.fail(ResultCode.CONFLICT, ErrorMessageConstants.DATA_DUPLICATE);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public Result<Void> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
         log.warn("数据完整性异常: {}", e.getMessage());
-        String message = "数据冲突，可能存在重复值或关联数据";
+        String message = ErrorMessageConstants.DATA_CONFLICT;
         if (e.getMessage() != null && e.getMessage().contains("Duplicate")) {
-            message = "数据已存在，请勿重复添加";
+            message = ErrorMessageConstants.DATA_DUPLICATE;
         }
         return Result.fail(ResultCode.BAD_REQUEST, message);
     }
@@ -86,45 +86,45 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public Result<Void> handleAccessDeniedException(AccessDeniedException e) {
         log.error("文件访问被拒绝: {}", e.getMessage());
-        return Result.fail(ResultCode.INTERNAL_ERROR, "文件存储目录无写入权限");
+        return Result.fail(ResultCode.INTERNAL_ERROR, ErrorMessageConstants.FILE_ACCESS_DENIED);
     }
 
     @ExceptionHandler(SecurityException.class)
     public Result<Void> handleSecurityException(SecurityException e) {
         log.error("安全权限异常: {}", e.getMessage());
-        return Result.fail(ResultCode.FORBIDDEN, "权限不足，操作被拒绝");
+        return Result.fail(ResultCode.FORBIDDEN, ErrorMessageConstants.FORBIDDEN_ACCESS);
     }
 
     @ExceptionHandler(IllegalStateException.class)
     public Result<Void> handleIllegalStateException(IllegalStateException e) {
         log.error("非法状态异常: {}", e.getMessage(), e);
-        String message = e.getMessage() != null ? e.getMessage() : "服务器内部状态异常";
+        String message = e.getMessage() != null ? e.getMessage() : ErrorMessageConstants.INTERNAL_STATE_ERROR;
         return Result.fail(ResultCode.INTERNAL_ERROR, message);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public Result<Void> handleIllegalArgumentException(IllegalArgumentException e) {
         log.warn("非法参数: {}", e.getMessage());
-        String message = e.getMessage() != null ? e.getMessage() : "参数错误";
+        String message = e.getMessage() != null ? e.getMessage() : ErrorMessageConstants.PARAM_ERROR;
         return Result.fail(ResultCode.BAD_REQUEST, message);
     }
 
     @ExceptionHandler(NullPointerException.class)
     public Result<Void> handleNullPointerException(NullPointerException e) {
         log.error("空指针异常", e);
-        return Result.fail(ResultCode.INTERNAL_ERROR, "服务器内部错误，请稍后重试");
+        return Result.fail(ResultCode.INTERNAL_ERROR, ErrorMessageConstants.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     @ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
     public Result<Void> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException e) {
         log.warn("不支持的请求类型: {}", e.getMessage());
-        return Result.fail(ResultCode.UNSUPPORTED_MEDIA_TYPE, "请求格式不支持");
+        return Result.fail(ResultCode.UNSUPPORTED_MEDIA_TYPE, ErrorMessageConstants.MEDIA_TYPE_NOT_SUPPORTED);
     }
 
     @ExceptionHandler(Exception.class)
     public Result<Void> handleException(Exception e) {
         log.error("未处理异常, type={}", e.getClass().getName(), e);
-        return Result.fail(ResultCode.INTERNAL_ERROR, "服务端错误，请稍后重试");
+        return Result.fail(ResultCode.INTERNAL_ERROR, ErrorMessageConstants.SERVER_ERROR);
     }
 }
